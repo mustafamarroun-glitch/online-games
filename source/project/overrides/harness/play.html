@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="./launcher.css">
     <link rel="stylesheet" href="./launcher-winchester.css">
     <link rel="stylesheet" href="./launcher-backup.css">
+    <link rel="stylesheet" href="./launcher-transfer-network.css">
     <link rel="stylesheet" href="./launcher-games.css">
     <link rel="stylesheet" href="./llm-ai-manager.css">
     <link rel="stylesheet" href="./launcher-runtime.css">
@@ -534,7 +535,18 @@
                 <button id="transferChooseSend" type="button"><span><svg><use href="#i-upload"/></svg></span><strong>Send files</strong><small>This device has Zero Hour installed</small></button>
                 <button id="transferChooseReceive" type="button"><span><svg><use href="#i-download"/></svg></span><strong>Receive files</strong><small>Install from another device</small></button>
               </div>
-              <p class="transfer-local-note"><svg><use href="#i-shield"/></svg> Files travel over an encrypted peer-to-peer connection. The discovery relay never carries game data.</p>
+              <details id="transferNetworkSettings" class="transfer-network-settings">
+                <summary>Connection settings</summary>
+                <p>Direct transfer works when your network allows it. An internet relay connects devices across restricted Wi-Fi, VPNs, and mobile networks. Files stay PIN-encrypted through the relay.</p>
+                <form id="transferRelayForm" autocomplete="off">
+                  <label for="transferRelayUrl">Relay address <textarea id="transferRelayUrl" rows="2" placeholder="turn:your-relay:3478&#10;turns:your-relay:443?transport=tcp" spellcheck="false" required></textarea></label>
+                  <label for="transferRelayUser">Relay username <input id="transferRelayUser" type="text" required></label>
+                  <label for="transferRelayPassword">Relay password <input id="transferRelayPassword" type="password" autocomplete="off" required></label>
+                  <div class="transfer-network-buttons"><button type="submit" class="button secondary">Save relay</button><button id="transferRelayTest" type="button" class="button secondary">Test relay</button><button id="transferRelayClear" type="button" class="button secondary">Clear</button></div>
+                </form>
+                <p id="transferNetworkStatus" role="status">No internet relay configured for this tab. Enter relay details on both devices, or use the same Wi-Fi with VPNs off.</p>
+              </details>
+              <p class="transfer-local-note"><svg><use href="#i-shield"/></svg> Files stay PIN-encrypted, whether connected directly or through an internet relay. The discovery service never carries game data.</p>
             </section>
 
             <section class="transfer-screen" data-transfer-screen="send-consent" hidden>
@@ -551,7 +563,7 @@
               <div class="transfer-secure-line"><svg><use href="#i-shield"/></svg><span><strong>PIN-encrypted WebRTC</strong><small id="transferSenderStatus">Opening a secure connection…</small></span></div>
               <div class="transfer-progress" aria-live="polite"><div><strong id="transferSenderProgressLabel">Waiting for a receiving device</strong><span id="transferSenderMetrics">0 B · 0 B/s</span></div><div class="transfer-progress-track" role="progressbar" aria-label="Combined send progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="transferSenderProgressFill"></span></div></div>
               <div id="transferReceiverList" class="transfer-peer-list"><p>No receiving devices connected yet.</p></div>
-              <footer class="transfer-actions"><button id="transferStopSend" type="button" class="button secondary">Stop sharing</button></footer>
+              <footer class="transfer-actions"><button type="button" class="button secondary" data-transfer-settings>Connection settings</button><button id="transferStopSend" type="button" class="button secondary">Stop sharing</button></footer>
             </section>
 
             <section class="transfer-screen" data-transfer-screen="receive-consent" hidden>
@@ -570,11 +582,11 @@
 
             <section class="transfer-screen" data-transfer-screen="receive-live" hidden>
               <div class="transfer-heading"><p class="eyebrow">RECEIVING FILES</p><h1 id="transferReceiveTitle">Connecting to your device…</h1><p id="transferReceiveDetail">Waiting for the sender to approve this encrypted connection.</p></div>
-              <div class="transfer-secure-line"><svg><use href="#i-shield"/></svg><span><strong>PIN-encrypted WebRTC</strong><small>Game data is traveling directly between your devices</small></span></div>
+              <div class="transfer-secure-line"><svg><use href="#i-shield"/></svg><span><strong>PIN-encrypted WebRTC</strong><small>Files stay PIN-encrypted, including through an internet relay</small></span></div>
               <div class="transfer-progress large" aria-live="polite"><div><strong id="transferReceiverProgressLabel">Preparing browser storage…</strong><span id="transferReceiverMetrics">0 B · 0 B/s</span></div><div class="transfer-progress-track" role="progressbar" aria-label="Receive progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="transferReceiverProgressFill"></span></div></div>
               <p id="transferReceiverFile" class="transfer-current-file">Waiting for manifest…</p>
               <p id="transferLiveError" class="transfer-error" role="alert" hidden></p>
-              <footer class="transfer-actions"><button id="transferCancelReceive" type="button" class="button secondary">Cancel transfer</button></footer>
+              <footer class="transfer-actions"><button id="transferRetryReceive" type="button" class="button primary" hidden>Retry connection</button><button type="button" class="button secondary" data-transfer-settings>Connection settings</button><button id="transferCancelReceive" type="button" class="button secondary">Cancel transfer</button></footer>
             </section>
 
             <section class="transfer-screen transfer-complete" data-transfer-screen="complete" hidden>

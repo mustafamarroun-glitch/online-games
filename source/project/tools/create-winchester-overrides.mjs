@@ -136,3 +136,4 @@ apps = replaceOnce(apps, '      page.innerHTML = browserPages[address];', `     
       }`);
 await put('launcher-desktop-apps.js', apps);
 console.log(`Generated ${brand.name} ${brand.version}; retained vendor and V1 storage identifiers.`);
+await import('./create-transfer-overrides.mjs');

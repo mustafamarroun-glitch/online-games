@@ -119,9 +119,9 @@ for (let start = 0, number = 1; start < baseZip.length; start += partSize, numbe
   await put(`source/${name}`, bytes);
   parts.push({ name, bytes:bytes.length, sha256:hash(bytes) });
 }
-const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1',
+const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1', 'TRANSFER_FIX.md',
   'tools/create-combined-overrides.mjs', 'tools/serve-local-preview.mjs', 'tools/fetch-prebuilt-runtime.ps1',
-  'tools/package-deployment.mjs', 'tools/verify-deployment.mjs', 'tools/prepare-github-repository.mjs', 'tools/create-backup-overrides.mjs', 'tools/create-winchester-overrides.mjs', 'deployment/project.json', 'deployment/branding.json'];
+  'tools/package-deployment.mjs', 'tools/verify-deployment.mjs', 'tools/prepare-github-repository.mjs', 'tools/create-backup-overrides.mjs', 'tools/create-winchester-overrides.mjs', 'tools/create-transfer-overrides.mjs', 'deployment/project.json', 'deployment/branding.json'];
 async function listOverrideSources(directory, prefix = 'overrides/harness/') {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) await listOverrideSources(resolve(directory, entry.name), prefix + entry.name + '/');
