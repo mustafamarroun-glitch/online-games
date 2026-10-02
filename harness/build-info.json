@@ -1,0 +1,14 @@
+{
+  "schema": "cnc.harness-build-info.v1",
+  "release": {
+    "version": "0.8.4-beta"
+  },
+  "git": {
+    "commit": "3ccaa0e9af66889be183ca910851e881d47d437c",
+    "shortCommit": "3ccaa0e",
+    "dirty": true
+  },
+  "generatedAt": "2026-10-02T11:55:04.454Z",
+  "assetProfile": "Combined English Generals/Zero Hour installation; 17 validated BIG archives",
+  "modifications": "Combined archive profile and deployment packaging; see corresponding source."
+}

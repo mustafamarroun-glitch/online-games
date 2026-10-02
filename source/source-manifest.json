@@ -1,0 +1,34 @@
+{
+  "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
+  "originalZipSha256": "91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e",
+  "parts": [
+    {
+      "name": "NewShoes-source.zip.part01",
+      "bytes": 16777216,
+      "sha256": "c711fdf5d490a6563a6de175ddbe8083acdb9932ba0bfa540061be6853e7ca95"
+    },
+    {
+      "name": "NewShoes-source.zip.part02",
+      "bytes": 11850543,
+      "sha256": "07ff5f16596ca87374e8be0022d73cab9ec00f5ee8a17032553a5cb1870af07e"
+    }
+  ],
+  "projectFiles": [
+    "Dockerfile",
+    "compose.yaml",
+    ".dockerignore",
+    "Start-Local.ps1",
+    "tools/create-combined-overrides.mjs",
+    "tools/serve-local-preview.mjs",
+    "tools/fetch-prebuilt-runtime.ps1",
+    "tools/package-deployment.mjs",
+    "tools/verify-deployment.mjs",
+    "deployment/project.json",
+    "overrides/harness/launcher-archive-specs.js",
+    "overrides/harness/launcher-asset-manager.mjs",
+    "overrides/harness/launcher-asset-worker.js"
+  ],
+  "packagingChanges": [
+    "Root launcher, isolation bootstrap, truthful beta status, unsupported disc entry hidden, analytics disabled, notice links"
+  ]
+}

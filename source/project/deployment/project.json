@@ -1,0 +1,13 @@
+{
+  "name": "Online Games",
+  "stage": "Testing beta",
+  "reviewedAt": "2026-10-02",
+  "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
+  "sourceZipSha256": "91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e",
+  "runtimeWasmSha256": "0b9ad4439b8e10c7f34bdcd6fc235f2d8f915362da6e0371f4a497ee8b4ef34d",
+  "assetProfile": "Combined English Generals/Zero Hour installation; 17 validated BIG archives",
+  "verified": ["Windows browser skirmish", "Construction and unit input", "Sound confirmed by user", "Save/load and persistence", "Desktop window controls"],
+  "unverified": ["macOS gameplay", "Internet multiplayer", "Other installations and mods", "Long-match stability"],
+  "gameData": "Each browser imports compatible files locally. No retail game data is distributed by this website.",
+  "videos": "Optional movie playback is not included in this beta package."
+}

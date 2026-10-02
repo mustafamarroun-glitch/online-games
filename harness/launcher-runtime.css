@@ -1,0 +1,162 @@
+/* Glue between the Project New Shoes desktop and the existing real-game harness. */
+
+/* Mobile keyboards commonly shrink 100dvh. Keep the desktop and transferred
+   game canvas at their pre-keyboard geometry; touch-controls.mjs separately
+   positions its native text proxy above the visible keyboard. */
+:root.touch-keyboard-open {
+  --desktop-viewport-height: var(--touch-frozen-viewport-height);
+}
+
+html,
+body {
+  width: 100%;
+  height: var(--desktop-viewport-height);
+  overflow: hidden;
+}
+
+body {
+  display: block;
+  min-height: var(--desktop-viewport-height);
+  color: #1d3542;
+  background: #173b52;
+}
+
+/* The default XP desktop gets a project-owned 4K pastoral battlefield. Keep
+   the desert artwork inside the launcher windows, where it supports the game
+   cards without making the desktop itself feel like a stretched thumbnail. */
+.desktop[data-wallpaper="command"] .wallpaper-art {
+  background: #4f9bc8 url("./assets/zeroh-bliss-at-war-4k.webp") center center / cover no-repeat;
+}
+
+.wallpaper-swatch.command {
+  background: #4f9bc8 url("./assets/zeroh-bliss-at-war-swatch.webp") center center / cover no-repeat;
+}
+
+/* Keep the original persisted wallpaper keys, but give every choice a real
+   XP-classic-at-war image instead of recoloring the synthetic hill shapes. */
+.desktop[data-wallpaper="meadow"] .wallpaper-art {
+  background: #a96428 url("./assets/zeroh-autumn-offensive-1440p.webp") center center / cover no-repeat;
+  filter: none;
+}
+
+.desktop[data-wallpaper="slate"] .wallpaper-art {
+  background: #35aaca url("./assets/zeroh-azul-armada-1440p.webp") center center / cover no-repeat;
+  filter: none;
+}
+
+.desktop[data-wallpaper="dusk"] .wallpaper-art {
+  background: #53241f url("./assets/zeroh-red-moon-front-1440p.webp") center center / cover no-repeat;
+  filter: none;
+}
+
+.wallpaper-swatch.meadow {
+  background: #a96428 url("./assets/zeroh-autumn-offensive-swatch.webp") center center / cover no-repeat;
+}
+
+.wallpaper-swatch.slate {
+  background: #35aaca url("./assets/zeroh-azul-armada-swatch.webp") center center / cover no-repeat;
+}
+
+.wallpaper-swatch.dusk {
+  background: #53241f url("./assets/zeroh-red-moon-front-swatch.webp") center center / cover no-repeat;
+}
+
+.desktop[data-wallpaper="meadow"] .sun-glow,
+.desktop[data-wallpaper="meadow"] .ridge,
+.desktop[data-wallpaper="meadow"] .terrain-grid,
+.desktop[data-wallpaper="slate"] .sun-glow,
+.desktop[data-wallpaper="slate"] .ridge,
+.desktop[data-wallpaper="slate"] .terrain-grid,
+.desktop[data-wallpaper="dusk"] .sun-glow,
+.desktop[data-wallpaper="dusk"] .ridge,
+.desktop[data-wallpaper="dusk"] .terrain-grid {
+  display: none;
+}
+
+#overlay.boot-sentinel,
+#progress.boot-sentinel {
+  display: none;
+}
+
+.launch-overlay .playShell {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  pointer-events: none;
+  background: transparent;
+}
+
+.launch-overlay.is-running .playShell {
+  pointer-events: auto;
+  background: #000;
+}
+
+.launch-overlay:not(.is-running) .touchControls {
+  display: none;
+}
+
+.launch-overlay .launch-loader {
+  z-index: 4;
+}
+
+.launch-overlay.is-running .runtime-grid,
+.launch-overlay.is-running::before {
+  display: none;
+}
+
+.launch-overlay #viewport[hidden] {
+  display: none;
+}
+
+.launch-overlay #performanceOverlay {
+  position: absolute;
+}
+
+.binkPreparationOverlay {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  width: min(440px, calc(100% - 32px));
+  padding: 14px 16px;
+  transform: translateX(-50%);
+  color: #eef6f3;
+  border: 1px solid rgba(225, 185, 91, .55);
+  border-radius: 5px;
+  background: rgba(10, 24, 27, .94);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .55);
+  pointer-events: auto;
+}
+
+.binkPreparationOverlay[hidden] { display: none; }
+.binkPreparationOverlay > div:first-child { display: flex; justify-content: space-between; gap: 12px; }
+.binkPreparationOverlay strong { color: #e5c36c; font-size: 12px; letter-spacing: .04em; }
+.binkPreparationOverlay > div:first-child span { overflow: hidden; color: #a9bab7; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.binkPreparationOverlay p { margin: 8px 72px 0 0; color: #b5c3c1; font-size: 10px; }
+.binkPreparationOverlay button { position: absolute; right: 16px; bottom: 11px; padding: 5px 9px; color: #e6ca83; border: 1px solid #806d3d; border-radius: 3px; background: #263336; cursor: pointer; }
+.binkPreparationOverlay button:disabled { opacity: .55; cursor: wait; }
+.binkPreparationProgress { height: 4px; margin-top: 10px; overflow: hidden; background: #304043; }
+.binkPreparationProgress span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #b58138, #efd77e); transition: width .18s linear; }
+
+#consolePanel {
+  z-index: 22010;
+}
+
+#issueModal {
+  z-index: 22020;
+}
+
+.scan-panel .error {
+  color: #a83d2b;
+}
+
+.launch-button:disabled,
+.row-launch:disabled,
+.storage-choice.is-disabled {
+  cursor: not-allowed;
+  filter: grayscale(.7);
+  opacity: .68;
+}

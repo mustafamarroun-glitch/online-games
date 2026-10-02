@@ -1,0 +1,992 @@
+:root {
+  color-scheme: dark;
+  --sys-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --accent: #e0a83a;
+  --accent-2: #c8801e;
+  --panel: #12161c;
+  --panel-2: #1a2029;
+  --line: #2b333d;
+  --line-2: #394452;
+  --text: #eef2f6;
+  --text-dim: #9aa7b4;
+  font-family: var(--sys-font);
+  background: #0a0c0f;
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #08090b;
+}
+
+/* Prevent mobile browsers from stealing touches for scroll/zoom/callout before
+   the canvas input path can claim them. */
+.shell,
+#viewport {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+#viewport { touch-action: none; }
+
+/* ---------------------------------------------------------------------------
+   Legacy harness shell (index.html and the smoke pages): the historical
+   capped-width 16:9 canvas box. The playable page uses .shell.playShell below.
+   --------------------------------------------------------------------------- */
+.shell {
+  width: min(100vw, 1280px);
+  min-height: 100vh;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+#viewport {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100vh;
+  aspect-ratio: 16 / 9;
+  align-self: center;
+  background: #000;
+  display: block;
+  object-fit: contain;
+}
+
+/* ---------------------------------------------------------------------------
+   Playing shell (play.html). The canvas IS the window: the shell fills the
+   whole viewport (no width cap, no forced aspect box) so windowed and
+   fullscreen share one geometry model. The game has no custom chrome unless
+   the host explicitly enables the performance diagnostics overlay.
+   --------------------------------------------------------------------------- */
+.shell.playShell {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.shell.playShell #viewport {
+  /* Absolutely positioned so the percentages resolve against the shell box
+     (the window) instead of the grid's implicit auto tracks — a plain
+     height:100% grid item is circular there and silently falls back to the
+     canvas buffer's intrinsic aspect (the box then tracks the render buffer,
+     not the window, and Dynamic mode chases its own tail). */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  /* The backing store is pinned to the ENGINE render resolution (bridge.js).
+     In Dynamic mode that resolution follows this box x devicePixelRatio, so
+     `contain` fills the window edge-to-edge with a 1:1-sharp render. At a
+     fixed resolution the aspect generally differs from the window, and
+     `contain` centers the render letterboxed on black instead of stretching
+     it — the chosen resolution is visually respected. Windowed and fullscreen
+     behave identically. canvasInputPointFromEvent maps clicks through the same
+     contained content box so they land on the right engine point. */
+  object-fit: contain;
+}
+
+/* --- Opt-in performance diagnostics --------------------------------------- */
+.performanceOverlay {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  z-index: 35;
+  width: min(320px, calc(100vw - 20px));
+  padding: 10px;
+  color: #edf5fc;
+  background: rgba(8, 12, 16, 0.84);
+  border: 1px solid rgba(181, 207, 228, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  user-select: none;
+}
+.performanceOverlay.hidden { display: none; }
+.performanceTitle {
+  margin-bottom: 6px;
+  color: #8fa8ba;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.performanceRates,
+.performanceStats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #8fa8ba;
+}
+.performanceRates strong { color: #e9f4fb; font-size: 16px; }
+.performanceStats strong { color: #c9dbe7; font-weight: 600; }
+#performanceGraph {
+  width: 100%;
+  height: 92px;
+  display: block;
+  margin: 7px 0 6px;
+}
+
+/* --- In-game issue capture controls -------------------------------------- */
+.captureOverlay {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 55;
+  width: min(350px, calc(100vw - 20px));
+  padding: 10px;
+  color: #edf5fc;
+  background: rgba(8, 12, 16, 0.9);
+  border: 1px solid rgba(181, 207, 228, 0.24);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.34);
+  font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+.captureOverlay.hidden { display: none; }
+.captureOverlayHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 7px;
+}
+.captureOverlayHeader strong {
+  color: #e9f4fb;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.captureOverlayIndicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #71818d;
+  box-shadow: 0 0 0 3px rgba(113, 129, 141, 0.12);
+}
+.captureOverlay.is-recording .captureOverlayIndicator {
+  background: #ff4c4c;
+  box-shadow: 0 0 0 3px rgba(255, 76, 76, 0.16);
+  animation: capturePulse 1.4s ease-in-out infinite;
+}
+@keyframes capturePulse { 50% { opacity: 0.45; } }
+.captureOverlayHeader button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #9fb1be;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font: 18px/1 sans-serif;
+  cursor: pointer;
+}
+.captureOverlayHeader button:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+.captureOverlayHeader button:disabled { opacity: 0.35; cursor: not-allowed; }
+.captureOverlayStats { margin-top: 7px; color: #b8c8d3; }
+.captureOverlayStatus {
+  min-height: 1.3em;
+  margin-top: 3px;
+  color: #7f96a6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.captureOverlayActions {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 6px;
+  margin-top: 9px;
+}
+.captureOverlayActions button {
+  min-height: 30px;
+  padding: 5px 8px;
+  color: #dce8ef;
+  background: #18232b;
+  border: 1px solid #344550;
+  border-radius: 5px;
+  font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  cursor: pointer;
+}
+.captureOverlayActions button:hover { background: #22313b; border-color: #526975; }
+.captureOverlayActions button:disabled { opacity: 0.55; cursor: wait; }
+.captureOverlayActions .captureOverlayPrimary {
+  color: #07130d;
+  background: #8ad5a7;
+  border-color: #a2e6bc;
+  font-weight: 700;
+}
+.captureOverlayActions .captureOverlayPrimary:hover { background: #a2e6bc; }
+.reduce-motion .captureOverlayIndicator { animation: none; }
+
+/* ===========================================================================
+   LAUNCHER SCREEN
+   =========================================================================== */
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 4vw, 40px);
+  overflow: auto;
+}
+#overlay.hidden { display: none; }
+
+.launcherBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, rgba(224, 168, 58, 0.10), transparent 60%),
+    radial-gradient(900px 600px at 15% 110%, rgba(40, 90, 140, 0.14), transparent 55%),
+    linear-gradient(160deg, #0c0f14 0%, #070809 60%, #0a0c10 100%);
+}
+.launcherBg::after {
+  /* Faint diagonal texture so the black isn't dead-flat. */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.012) 0px,
+    rgba(255, 255, 255, 0.012) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+  opacity: 0.7;
+}
+
+/* Real game splash art (Install_Final.bmp -> PNG) behind the launcher panel.
+   Dimmed + vignetted so the panel/progress stay readable; when the asset is
+   missing the img removes itself and the gradient above shows unchanged. */
+.launcherBg .splashArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  opacity: 0.5;
+}
+.launcherBg::before {
+  /* Scrim above the splash art (paint order: gradient bg < img < ::after
+     texture < this z-indexed ::before scrim). */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(120% 90% at 50% 45%, rgba(5, 6, 8, 0.25) 30%, rgba(5, 6, 8, 0.78) 100%),
+    linear-gradient(180deg, rgba(5, 6, 8, 0.45), rgba(5, 6, 8, 0.62));
+}
+
+.launcherPanel {
+  position: relative;
+  z-index: 1;
+  width: min(680px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 3vw, 28px);
+  padding: clamp(22px, 4vw, 40px);
+  background: linear-gradient(180deg, rgba(26, 32, 41, 0.92), rgba(16, 20, 26, 0.94));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.launcherHead { text-align: center; }
+.launcherKicker {
+  margin: 0 0 2px;
+  font-size: clamp(11px, 1.6vw, 13px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.launcherTitle {
+  margin: 0;
+  font-size: clamp(34px, 8vw, 58px);
+  line-height: 0.98;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(224, 168, 58, 0.25);
+}
+.launcherTitle .titleZh {
+  display: block;
+  margin-top: 6px;
+  font-size: clamp(15px, 3vw, 22px);
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-shadow: none;
+}
+.launcherSub {
+  margin: 12px auto 0;
+  max-width: 42ch;
+  font-size: clamp(13px, 2vw, 15px);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.launcherBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(18px, 3vw, 28px);
+  align-items: start;
+}
+@media (max-width: 620px) {
+  .launcherBody { grid-template-columns: 1fr; }
+}
+
+.launcherPrimary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.playButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+  padding: 18px 28px;
+  font: 700 clamp(17px, 2.4vw, 20px)/1 var(--sys-font);
+  letter-spacing: 0.04em;
+  color: #1a1206;
+  cursor: pointer;
+  background: linear-gradient(180deg, #f2c04d, var(--accent-2));
+  border: 1px solid #f6cf6a;
+  border-radius: 12px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45) inset,
+    0 10px 26px rgba(200, 128, 30, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.playButton:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.playButton:active { transform: translateY(1px); box-shadow: 0 4px 12px rgba(200, 128, 30, 0.3); }
+.playButton:disabled {
+  cursor: default;
+  filter: grayscale(0.5) brightness(0.7);
+  transform: none;
+  box-shadow: none;
+}
+.playButton .playGlyph { font-size: 0.85em; transform: translateY(1px); }
+
+.launcherProgress {
+  margin: 0;
+  min-height: 1.2em;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #8fbfe0;
+  text-align: center;
+  word-break: break-word;
+}
+.launcherProgress.error { color: #ef8f7f; }
+.launcherWarning {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #b79458;
+  text-align: center;
+}
+
+/* --- Boot progress (archive download/mount bar + engine-init pulse) --------- */
+.bootProgress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bootProgress.hidden { display: none; }
+.bootBarTrack {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  background: rgba(8, 10, 13, 0.9);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+}
+.bootBarFill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-2), #f2c04d);
+  box-shadow: 0 0 12px rgba(224, 168, 58, 0.45);
+  transition: width 0.25s ease;
+}
+/* Engine-init phase: archives are in, no byte counter to show — pulse the
+   full bar instead of pretending a percentage. */
+.bootProgress.indeterminate .bootBarFill {
+  width: 100% !important;
+  animation: bootBarPulse 1.6s ease-in-out infinite;
+}
+@keyframes bootBarPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+.bootStats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text);
+}
+.bootStats #bootRate { color: var(--text-dim); }
+.bootDetail {
+  margin: 0;
+  min-height: 1.2em;
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+  text-align: center;
+  word-break: break-word;
+}
+
+/* --- Pre-game settings block ------------------------------------------------ */
+.launcherSettings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(10, 13, 17, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.settingsHeading {
+  margin: 0 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.settingLabel {
+  font-size: 14px;
+  color: var(--text);
+}
+.settingHint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.networkSettingsHeading {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.networkSetting {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.networkSetting input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font: 12px/1.2 var(--sys-font);
+  padding: 8px 9px;
+  color: var(--text);
+  background: #0c1016;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+}
+.networkSetting input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.networkAdvanced summary {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+.networkAdvanced[open] {
+  display: grid;
+  gap: 8px;
+}
+
+.launcherFoot {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+.buildAge {
+  font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+.buildAge.fresh { color: #7ee787; }
+
+/* ===========================================================================
+   ENGINE LOG CONSOLE PANEL
+   =========================================================================== */
+#consolePanel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40vh;
+  background: rgba(10, 12, 14, 0.96);
+  color: #9fd49f;
+  font: 11px/1.45 ui-monospace, monospace;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-top: 1px solid #333;
+  white-space: pre-wrap;
+  word-break: break-all;
+  z-index: 70;
+}
+#consolePanel.hidden { display: none; }
+
+/* ===========================================================================
+   ISSUE-REPORT MODAL
+   =========================================================================== */
+#issueModal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 1rem;
+}
+#issueModal.hidden { display: none; }
+#issueDialog {
+  width: min(96vw, 980px);
+  max-height: 94vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  background: #111820;
+  color: #dbe7ef;
+  border: 1px solid #40515f;
+  border-radius: 10px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  padding: 0.8rem;
+}
+.issueTop {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+.issueTop input[type="text"] {
+  min-width: 0;
+  background: #0c1117;
+  border: 1px solid #3c4a55;
+  color: #eef6fb;
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  font: 13px/1.4 var(--sys-font);
+}
+.issuePaint {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #b9c7d1;
+  font: 12px/1.3 var(--sys-font);
+}
+.issueCanvasWrap {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  background: #05070a;
+  border: 1px solid #2a343d;
+}
+#issueScreenshotCanvas,
+#issueAnnotationCanvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#issueAnnotationCanvas {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+}
+.issueBottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+#issueComment {
+  min-height: 5rem;
+  resize: vertical;
+  background: #0c1117;
+  color: #eef6fb;
+  border: 1px solid #3c4a55;
+  border-radius: 6px;
+  padding: 0.55rem;
+  font: 13px/1.45 var(--sys-font);
+}
+
+/* --- Touch game controls --------------------------------------------------
+   The root never intercepts the game surface. Only visible controls opt into
+   pointer events, so one- and two-finger gestures still begin on the canvas. */
+.touchControls {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  overflow: hidden;
+  color: #f3f6f4;
+  font: 600 12px/1.2 var(--sys-font);
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.touchControls[hidden],
+.touchControls [hidden],
+.touchTextBar[hidden] {
+  display: none !important;
+}
+.touchControls button,
+.touchTextBar button,
+.touchTextBar textarea {
+  font: inherit;
+  touch-action: manipulation;
+}
+.touchControls button,
+.touchTextBar button {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 6px 10px;
+  color: #f7f4e9;
+  border: 1px solid rgba(231, 202, 123, .58);
+  border-radius: 9px;
+  background: linear-gradient(rgba(48, 67, 62, .96), rgba(20, 33, 32, .96));
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .46), inset 0 1px rgba(255, 255, 255, .12);
+  pointer-events: auto;
+}
+.touchControls button:active,
+.touchControls button[aria-pressed="true"],
+.touchTextBar button:active {
+  color: #17201c;
+  border-color: #ffe29a;
+  background: #e5bf62;
+}
+.touchToolbar {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+.touchToolbar button {
+  display: grid;
+  min-width: 58px;
+  place-items: center;
+  gap: 1px;
+  padding: 5px 8px;
+  color: #f3eedf;
+  background: rgba(18, 31, 30, .82);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+.touchToolbar button > span:first-child {
+  font-size: 19px;
+  line-height: 17px;
+}
+.touchGuide,
+.touchKeyPanel {
+  position: absolute;
+  top: max(66px, calc(env(safe-area-inset-top) + 58px));
+  right: max(8px, env(safe-area-inset-right));
+  width: min(430px, calc(100% - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  max-height: calc(100% - 82px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow: hidden;
+  color: #eaf0ec;
+  border: 1px solid rgba(224, 190, 105, .55);
+  border-radius: 12px;
+  background: rgba(10, 21, 21, .94);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .58);
+  pointer-events: auto;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.touchGuide header,
+.touchKeyPanel header {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 14px;
+  color: #f2cd73;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+}
+.touchGuide header button,
+.touchKeyPanel header button {
+  min-width: 40px;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 24px;
+}
+.touchGuide dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 14px;
+}
+.touchGuide dl > div { min-width: 0; }
+.touchGuide dt { color: #fff3cc; }
+.touchGuide dd {
+  margin: 2px 0 0;
+  color: #b7c6c1;
+  font-weight: 450;
+}
+.touchGuide p {
+  margin: 0;
+  padding: 0 14px 14px;
+  color: #c5d0cc;
+  font-weight: 450;
+}
+.touchKeyPanel {
+  width: min(560px, calc(100% - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  display: flex;
+  flex-direction: column;
+}
+.touchKeyPanel header > span {
+  color: #9eb0aa;
+  font-size: 10px;
+  font-weight: 450;
+}
+.touchKeyScroll {
+  min-height: 0;
+  padding: 10px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.touchKeySection {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(42px, 1fr));
+  gap: 5px;
+  margin-bottom: 7px;
+}
+.touchKeySection button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 5px 3px;
+  border-color: rgba(181, 202, 193, .34);
+  border-radius: 6px;
+  background: rgba(41, 57, 54, .92);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08);
+}
+.touchCameraKeys,
+.touchCommonKeys { grid-template-columns: repeat(5, minmax(54px, 1fr)); }
+.touchModifierKeys { grid-template-columns: repeat(3, minmax(58px, 1fr)) minmax(180px, 3fr); }
+.touchModifierKeys > span {
+  align-self: center;
+  padding: 0 7px;
+  color: #aab9b4;
+  font-size: 10px;
+  font-weight: 450;
+}
+.touchNavigationKeys { grid-template-columns: repeat(5, minmax(44px, 1fr)); }
+.touchFunctionKeys { grid-template-columns: repeat(12, minmax(36px, 1fr)); }
+.touchNumpadKeys { grid-template-columns: repeat(4, minmax(56px, 1fr)); }
+.touchTextBar {
+  position: absolute;
+  z-index: 41;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: max(var(--touch-keyboard-inset, 0px), env(keyboard-inset-height, 0px), env(safe-area-inset-bottom));
+  left: max(8px, env(safe-area-inset-left));
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  padding: 8px;
+  color: #dbe5e0;
+  border: 1px solid rgba(224, 190, 105, .58);
+  border-radius: 12px 12px 0 0;
+  background: rgba(10, 21, 21, .96);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, .55);
+  pointer-events: auto;
+}
+.touchTextBar label {
+  min-width: 0;
+  flex: 1;
+}
+.touchTextBar label > span {
+  display: block;
+  margin: 0 0 4px 2px;
+  color: #e8ca7c;
+  font-size: 10px;
+}
+.touchTextBar textarea {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  max-height: 80px;
+  display: block;
+  resize: none;
+  padding: 10px 12px;
+  color: #f3f6f4;
+  caret-color: #f2ca69;
+  border: 1px solid #667c74;
+  border-radius: 7px;
+  outline: none;
+  background: #152321;
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+@media (max-width: 700px), (max-height: 520px) {
+  .touchToolbar { gap: 4px; }
+  .touchToolbar button {
+    min-width: 50px;
+    min-height: 48px;
+    padding-inline: 5px;
+    font-size: 10px;
+  }
+  .touchButtonWideLabel { display: none; }
+  .touchGuide,
+  .touchKeyPanel {
+    top: max(62px, calc(env(safe-area-inset-top) + 54px));
+    max-height: calc(100% - 70px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  .touchGuide dl { grid-template-columns: 1fr; }
+  .touchKeyPanel { left: max(8px, env(safe-area-inset-left)); width: auto; }
+  .touchKeySection { grid-template-columns: repeat(6, minmax(42px, 1fr)); }
+  .touchCameraKeys,
+  .touchCommonKeys { grid-template-columns: repeat(5, minmax(48px, 1fr)); }
+  .touchModifierKeys { grid-template-columns: repeat(3, 1fr); }
+  .touchModifierKeys > span { grid-column: 1 / -1; }
+  .touchNavigationKeys { grid-template-columns: repeat(5, 1fr); }
+  .touchFunctionKeys { grid-template-columns: repeat(6, 1fr); }
+  .touchNumpadKeys { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (orientation: portrait) and (max-width: 600px) {
+  .touchToolbar {
+    top: auto;
+    right: max(5px, env(safe-area-inset-right));
+    bottom: max(5px, env(safe-area-inset-bottom));
+    left: max(5px, env(safe-area-inset-left));
+    justify-content: center;
+  }
+  .touchToolbar button { flex: 1; max-width: 74px; }
+  .touchGuide,
+  .touchKeyPanel {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(62px + env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+    width: auto;
+    max-height: none;
+  }
+}
+.issueActions {
+  display: flex;
+  gap: 0.45rem;
+}
+.issueActions button,
+.issueTop button {
+  font: 12px/1.3 var(--sys-font);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  background: #20262c;
+  color: #e7f1f7;
+  border: 1px solid #4a5864;
+  border-radius: 8px;
+}
+@media (max-width: 760px) {
+  .issueTop,
+  .issueBottom {
+    grid-template-columns: 1fr;
+  }
+  .issueActions {
+    justify-content: end;
+  }
+}
+
+/* ===========================================================================
+   FULLSCREEN STATE
+   When the .shell is the fullscreen element, drop all page chrome and let the
+   game canvas fill the screen on black, letterboxing on black if the render
+   aspect does not match. Windowed layout is untouched.
+
+   Both :fullscreen and -webkit-full-screen are covered, plus an .is-fullscreen
+   class the page toggles as a belt-and-suspenders path for engines/browsers
+   that scope :fullscreen oddly. Selectors are kept in separate rules because
+   one unknown selector invalidates a whole grouped selector list in CSS.
+   =========================================================================== */
+.shell:fullscreen,
+.shell.is-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shell:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Canvas fills the fullscreen viewport, centered, letterboxed on BLACK. Drop
+   the windowed 16:9 aspect lock; the page auto-applies a native resolution
+   matched to the screen so the buffer aspect matches and the canvas fills. */
+.shell:fullscreen #viewport,
+.shell.is-fullscreen #viewport {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: #000;
+  align-self: center;
+}
+.shell:-webkit-full-screen #viewport {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: #000;
+  align-self: center;
+}

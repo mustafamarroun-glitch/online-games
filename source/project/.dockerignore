@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!NewShoes-source.zip
+!overrides/
+!overrides/harness/
+!overrides/harness/*.js
+!overrides/harness/*.mjs

@@ -1,0 +1,10 @@
+services:
+  zeroh:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: online-games-zeroh:local
+    ports:
+      - "127.0.0.1:8080:8080"
+    init: true
+    restart: "no"
