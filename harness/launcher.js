@@ -49,6 +49,7 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
   }
 
   const APP_META = {
+    sanAndreas: { title: "San Andreas", icon: "#i-games" },
     setup: { title: "Game Launcher", launcherLogo: true },
     explorer: { title: "My Files", icon: "#i-folder" },
     mods: { title: "Mod Manager", icon: "#i-mod" },

@@ -3,6 +3,7 @@ import { readFile, stat, readdir } from 'node:fs/promises';
 import { extname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { resolve, sep } from 'node:path';
 import { startStaticServer } from '../vendor/NewShoes-main/WebAssembly/harness/static-server.mjs';
 
 // Development-only overlay: upstream sources remain unchanged. Before an
@@ -39,6 +40,20 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/' || url.pathname === '/launcher.html') {
     res.writeHead(302, { location: '/harness/play.html' });
     res.end();
+    return;
+  }
+  if (url.pathname.startsWith('/games/san-andreas/') && ['GET', 'HEAD'].includes(req.method)) {
+    const root = fileURLToPath(new URL('../experiments/san-andreas/', import.meta.url));
+    const name = decodeURIComponent(url.pathname.slice('/games/san-andreas/'.length)) || 'index.html';
+    const shared = ['OpenSA-preview-source.zip', 'LICENSE', 'provenance.json'].includes(name);
+    const path = resolve(root, shared ? name : `runtime/${name}`);
+    if (!path.startsWith(resolve(root) + sep) || name.split(/[\\/]/).some(part => part.startsWith('.'))) { res.writeHead(404); res.end(); return; }
+    try {
+      const body = await readFile(path);
+      res.writeHead(200, { 'content-type': contentTypes[extname(name)] || 'application/octet-stream', 'content-length': body.length,
+        'cross-origin-opener-policy': 'same-origin', 'cross-origin-embedder-policy': 'require-corp', 'cross-origin-resource-policy': 'same-origin', 'cache-control': 'no-store' });
+      res.end(req.method === 'HEAD' ? undefined : body);
+    } catch { res.writeHead(404); res.end(); }
     return;
   }
   if (runtimeManifest && ['GET', 'HEAD'].includes(req.method)) {

@@ -12,3 +12,4 @@ import "./mod-manager-ui.mjs";
 import "./custom-map-manager-ui.mjs";
 
 import "./launcher-winchester.mjs";
+import "./launcher-san-andreas.mjs";

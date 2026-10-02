@@ -66,16 +66,27 @@ html = replaceOnce(html, '<p class="eyebrow">APPEARANCE</p><h1>Make it feel like
   <label class="setting-block"><div><strong>Desktop shortcuts</strong><span>All tools stay available in the Start menu.</span></div><select id="winchesterDesktopMode"><option value="simple">Simple</option><option value="full">All shortcuts</option></select></label>`);
 html = html.replace('<button type="button" class="tray-network"', '<button type="button" class="tray-network" data-open-settings="hardware"');
 // Keep the compact desktop useful while preserving every application in Start.
+html = replaceOnce(html, '        <article id="programsWindow"', `        <article id="sanAndreasWindow" class="window san-andreas-window" data-app="sanAndreas" style="--x: 50%; --y: 46%; --w: 1000px; --h: 700px;" aria-label="San Andreas">
+          <header class="titlebar"><div class="titlebar-title"><span class="titlebar-app-icon"><svg><use href="#i-games"/></svg></span><span>San Andreas · Solo preview</span></div><div class="window-controls"><button type="button" data-window-action="minimize" aria-label="Minimize">—</button><button type="button" data-window-action="maximize" aria-label="Maximize">□</button><button type="button" data-window-action="close" aria-label="Close">×</button></div></header>
+          <div class="san-andreas-body"><p id="sanAndreasStatus" role="status" hidden></p><iframe id="sanAndreasFrame" title="San Andreas solo exploration" allow="fullscreen; autoplay" allowfullscreen></iframe></div>
+          <footer class="san-andreas-footer">WASD: move / drive · Enter: enter / exit car · F2: controls · Solo preview; multiplayer unavailable</footer>
+        </article>
+
+        <article id="programsWindow"`);
+html = replaceOnce(html, '            </div>\n            <section class="storage-overview">', `              <article class="library-row"><span class="library-game-art san-andreas-art"><svg><use href="#i-games"/></svg></span><div class="library-details"><strong>San Andreas</strong><span>Browser exploration and driving</span><small>Solo preview · Own game files required</small></div><div class="library-size">OpenSA<span>Experimental</span></div><button type="button" class="row-launch accent" data-open="sanAndreas">Play</button></article>
+            </div>
+            <section class="storage-overview">`);
 await put('play.html', html);
 
 let launcher = rename(await read('launcher.js'));
+launcher = replaceOnce(launcher, '  const APP_META = {', '  const APP_META = {\n    sanAndreas: { title: "San Andreas", icon: "#i-games" },');
 launcher = launcher.replace('./assets/launcher-logo.webp', brand.logo)
   .replaceAll(`${brand.name} Game Launcher`, 'Game Launcher').replaceAll(`${brand.name} Browser`, 'Browser')
   .replace('settings.wallpaper || "command"', 'settings.wallpaper || "winchester"')
   .replace('"installed and ready without the original media"', '"installed in this browser"');
 launcher += '\nconst betaDiscPicker = document.querySelector("#pickImageButton");\nif (betaDiscPicker) betaDiscPicker.hidden = true;\n';
 await put('launcher.js', launcher);
-await put('launcher-entry.mjs', (await read('launcher-entry.mjs')) + '\nimport "./launcher-winchester.mjs";\n');
+await put('launcher-entry.mjs', (await read('launcher-entry.mjs')) + '\nimport "./launcher-winchester.mjs";\nimport "./launcher-san-andreas.mjs";\n');
 await put('launcher-os-shutdown.mjs', (await read('launcher-os-shutdown.mjs')).replace('https://github.com/Agusx1211/NewShoes', brand.repository));
 await put('launcher-build-info.js', (await read('launcher-build-info.js')).replace('`v${version} · ${shortCommit}${info.git?.dirty ? "+dirty" : ""}`', '`Winchester OS · v${version}`'));
 await put('build-info.json', JSON.stringify({ schema: 'cnc.harness-build-info.v1', release: { version: brand.version, changelog: [{ version: 'Winchester OS V2 preview', date: '2026-10-02', entries: [

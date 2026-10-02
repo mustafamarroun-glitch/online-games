@@ -1,6 +1,6 @@
 {
   "name": "Winchester OS",
-  "projectVersion": "2.0.0-preview.1",
+  "projectVersion": "2.0.0-preview.2",
   "stage": "Version 2 testing preview",
   "reviewedAt": "2026-10-02",
   "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
@@ -10,7 +10,8 @@
   "verified": ["Windows browser skirmish", "Construction and unit input", "Sound confirmed by user", "Save/load and persistence", "Desktop window controls"],
   "unverified": ["macOS gameplay", "Internet multiplayer", "Other installations and mods", "Long-match stability"],
   "v2Verified": ["Personalization persistence", "Desktop shortcut switching", "Window movement and restoration", "Conservative V1 virtual-drive migration", "390px touch settings", "GitHub-style service-worker deployment preview"],
-  "runtimeRegression": "Engine artifacts unchanged from the verified V1 build. Gameplay was not rerun for this identity milestone.",
+  "runtimeRegression": "Zero Hour engine artifacts unchanged from the verified V1 build. Zero Hour gameplay was not rerun for this identity milestone.",
+  "sanAndreas": { "engine": "OpenSA 0.2.0", "scope": "Solo exploration and driving; original missions and multiplayer unavailable", "verified": ["Actual folder-upload fallback without showDirectoryPicker", "World rendering, walking, car entry and driving with the supplied installation", "Winchester OS library, desktop and Start integration", "Closing and reopening with session-selected files", "390px window layout", "GitHub-style service-worker package"], "folderRetention": "Native handle remembering where supported; fallback files retained for the current desktop session without bulk IndexedDB copying" },
   "gameData": "Each browser imports compatible files locally. No retail game data is distributed by this website.",
   "videos": "Optional movie playback is not included in this beta package."
 }

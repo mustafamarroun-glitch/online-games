@@ -512,6 +512,12 @@
           <footer class="browser-status"><span id="browserStatus">Local intranet</span><span>Internet zone</span></footer>
         </article>
 
+        <article id="sanAndreasWindow" class="window san-andreas-window" data-app="sanAndreas" style="--x: 50%; --y: 46%; --w: 1000px; --h: 700px;" aria-label="San Andreas">
+          <header class="titlebar"><div class="titlebar-title"><span class="titlebar-app-icon"><svg><use href="#i-games"/></svg></span><span>San Andreas · Solo preview</span></div><div class="window-controls"><button type="button" data-window-action="minimize" aria-label="Minimize">—</button><button type="button" data-window-action="maximize" aria-label="Maximize">□</button><button type="button" data-window-action="close" aria-label="Close">×</button></div></header>
+          <div class="san-andreas-body"><p id="sanAndreasStatus" role="status" hidden></p><iframe id="sanAndreasFrame" title="San Andreas solo exploration" allow="fullscreen; autoplay" allowfullscreen></iframe></div>
+          <footer class="san-andreas-footer">WASD: move / drive · Enter: enter / exit car · F2: controls · Solo preview; multiplayer unavailable</footer>
+        </article>
+
         <article id="programsWindow" class="window programs-window" data-app="programs" style="--x: 53%; --y: 46%; --w: 760px; --h: 515px;" aria-label="Game Library">
           <header class="titlebar">
             <div class="titlebar-title"><span class="titlebar-app-icon"><svg><use href="#i-apps"/></svg></span><span>Game Library</span></div>
@@ -521,6 +527,7 @@
             <header class="programs-hero"><div><p class="eyebrow">PROGRAM MANAGER</p><h1>Your game library</h1><p>See what is available and how its files are stored in this browser.</p></div><button type="button" class="button primary small" data-open-setup>+ Add game files</button></header>
             <div class="library-list">
               <article class="library-row"><span class="library-game-art zero"><img data-retail-icon alt="" hidden><span>ZH</span></span><div class="library-details"><strong>Zero Hour</strong><span>Current WebAssembly target</span><small><i></i><b class="library-state-label">Original files required</b></small></div><div class="library-size">Runtime<span>Local source</span></div><button type="button" class="row-launch accent" data-launch-game="Zero Hour">Launch</button><button type="button" class="more-button" data-open-settings="game" aria-label="Open Game and Display settings" title="Game &amp; Display settings">⚙</button></article>
+              <article class="library-row"><span class="library-game-art san-andreas-art"><svg><use href="#i-games"/></svg></span><div class="library-details"><strong>San Andreas</strong><span>Browser exploration and driving</span><small>Solo preview · Own game files required</small></div><div class="library-size">OpenSA<span>Experimental</span></div><button type="button" class="row-launch accent" data-open="sanAndreas">Play</button></article>
             </div>
             <section class="storage-overview"><div class="storage-donut"><span><b id="storageUsedValue">0</b><small>GB used</small></span></div><div class="storage-copy"><strong>Browser storage</strong><p id="storageCopyText">No game assets are stored in this browser yet.</p><div class="storage-legend"><span><i class="game-data"></i>Game data</span><span><i class="saves"></i>Saves</span><span><i class="available"></i>Available</span></div></div><button type="button" class="button secondary small" id="forgetLibraryButton">Forget library</button></section>
           </div>

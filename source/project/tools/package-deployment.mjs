@@ -62,6 +62,15 @@ async function packageOverrides(directory, prefix = '') {
   }
 }
 await packageOverrides(resolve(root, 'overrides/harness'));
+// A separate engine and AGPL corresponding source, never the user's installation.
+const sanAndreas = JSON.parse(await readFile(resolve(root, 'experiments/san-andreas/provenance.json'), 'utf8'));
+for (const file of sanAndreas.artifacts) {
+  if (file.path.split('/').some(part => part.startsWith('.'))) continue;
+  const bytes = await readFile(resolve(root, 'experiments/san-andreas', file.path));
+  if (hash(bytes) !== file.sha256) throw new Error(`Changed San Andreas artifact: ${file.path}`);
+  await put(`games/san-andreas/${file.path.replace(/^runtime\//, '')}`, bytes);
+}
+await put('games/san-andreas/provenance.json', JSON.stringify(sanAndreas, null, 2));
 if (hash(bytesByName.get('dist-threaded-release/cnc-port.wasm')) !== config.runtimeWasmSha256) {
   throw new Error('This is not the verified locally compiled engine.');
 }
@@ -102,12 +111,15 @@ await put('harness/play.html', '<!doctype html><meta charset="utf-8"><title>Open
 // The branded overlay includes project version and original engine provenance.
 await put('project-info.json', JSON.stringify(config, null, 2));
 await put('VERSION_2.md', `# Winchester OS V2 — Home Edition\n\nVersion: ${branding.version}. Testing preview released October 2, 2026.\n\nAn original Winchester W mark, Mediterranean Home wallpaper, nostalgic window chrome, and personal desktop name replace the visible New Shoes identity. Choose Ocean, Classic Blue, or Silver in Settings, and switch between a simple desktop and all shortcuts. Advanced tools remain in Start.\n\nThe home browser uses winchester:// addresses and accepts the previous newshoes:// links. System status reports browser capabilities and the actual installed library. Compact Settings uses a scrollable tab bar. Edited notes and existing game-storage identifiers are preserved. V1 ZIP backups remain available.\n\nLocal desktop and GitHub-style package browser checks passed for personalization persistence, shortcut switching, window movement and restoration, conservative drive migration, status, and 390px touch Settings. The compiled engine is unchanged from V1; actual gameplay was not rerun for this identity milestone. Mac gameplay, internet multiplayer, other installations/mods, and long-match stability remain unverified.\n\nV1 remains available at the v1.0.0 Git tag. Retail game files are supplied locally by each player and are not distributed by this repository.\n\n[License](LICENSE.md) · [Notices](legal.html) · [Corresponding source](source/index.html) · [Status](project-info.json)\n`);
+await put('SAN_ANDREAS.md', '# San Andreas in Winchester OS\n\nOpen Game Library → San Andreas → Play, or use its desktop/Start shortcut. It runs in a Winchester OS window. Select your own installation folder containing data and models. Files are read locally; game data is not hosted.\n\nThis is an OpenSA 0.2.0 solo exploration and driving prototype. Original missions and multiplayer are unavailable. It uses a police character, not CJ, and does not execute the original game or its native plugins.\n\nBrowsers without showDirectoryPicker use a folder-upload control. The word upload in the browser dialog means allowing this local application to read the selection; files are not sent to a server. The fallback remembers files for the current desktop session; select again after refreshing Winchester OS. Native folder handles can be remembered where supported.\n\nOpenSA copyright 2026 Aleksandrov Sergey; AGPL-3.0-only. Baseline: https://github.com/Avatarchik/opensa at d30f4e8ad2d41a9c7965c1416d7e857b5ef5f7e6. [Complete license](games/san-andreas/LICENSE) · [Complete modified source](games/san-andreas/OpenSA-preview-source.zip) · [Provenance](games/san-andreas/provenance.json).\n');
+await put('VERSION_2.md', bytesByName.get('VERSION_2.md').toString().replace('actual gameplay was not rerun for this identity milestone.', 'Zero Hour gameplay evidence remains the V1 baseline.').replace('[License](LICENSE.md)', '## San Andreas addition\n\nVersion 2.0.0-preview.2 adds a San Andreas solo exploration engine to the Game Library, desktop and Start menu. The game runs in a normal desktop window with taskbar, minimize, maximize and close controls. A browser folder-upload fallback handles missing showDirectoryPicker without copying the whole installation into limited browser storage. It keeps the selected files available for the current desktop session. Multiplayer and original missions are unavailable. [Play and scope](SAN_ANDREAS.md).\n\n[License](LICENSE.md)'));
 await put('.nojekyll', '');
 await put('LICENSE.md', await readFile(resolve(source, 'LICENSE.md')));
 let legal = await readFile(resolve(source, 'WebAssembly/pages/legal.html'), 'utf8');
 legal = legal.replaceAll('__PAGES_SOURCE_URL__', './source/index.html')
   .replace(/<section>\s*<h2>Browser video runtime<\/h2>[\s\S]*?<\/section>/,
     '<section><h2>Testing beta</h2><p>This build adapts the importer for a combined English installation. macOS, multiplayer, other editions, and optional movies remain unverified. Retail game files are not included.</p></section>');
+legal = legal.replace('</body>', '<section><h2>San Andreas exploration engine</h2><p>OpenSA code copyright 2026 Aleksandrov Sergey, licensed under AGPL-3.0. This modified engine is an experimental solo browser runtime. Game files are supplied locally by each player.</p><p><a href="games/san-andreas/LICENSE">Complete AGPL license</a> · <a href="games/san-andreas/OpenSA-preview-source.zip">Complete corresponding source</a> · <a href="games/san-andreas/provenance.json">Engine provenance</a></p></section></body>');
 await put('legal.html', legal);
 // Ship the exact base source plus our complete build/import/package modifications.
 // Split the ZIP so the same artifact also fits Cloudflare's 25 MiB per-file cap.
@@ -120,6 +132,7 @@ for (let start = 0, number = 1; start < baseZip.length; start += partSize, numbe
   parts.push({ name, bytes:bytes.length, sha256:hash(bytes) });
 }
 const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1', 'TRANSFER_FIX.md',
+  'Start-SanAndreas.ps1', 'tools/serve-san-andreas-preview.mjs', 'tools/package-san-andreas-preview.py',
   'tools/create-combined-overrides.mjs', 'tools/serve-local-preview.mjs', 'tools/fetch-prebuilt-runtime.ps1',
   'tools/package-deployment.mjs', 'tools/verify-deployment.mjs', 'tools/prepare-github-repository.mjs', 'tools/create-backup-overrides.mjs', 'tools/create-winchester-overrides.mjs', 'tools/create-transfer-overrides.mjs', 'deployment/project.json', 'deployment/branding.json'];
 async function listOverrideSources(directory, prefix = 'overrides/harness/') {

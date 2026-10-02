@@ -1,0 +1,103 @@
+{
+  "baseline": "https://github.com/Avatarchik/opensa",
+  "revision": "d30f4e8ad2d41a9c7965c1416d7e857b5ef5f7e6",
+  "engineVersion": "0.2.0",
+  "license": "AGPL-3.0-only",
+  "date": "2026-10-02",
+  "scope": "Winchester OS solo exploration preview. No campaign or multiplayer. Local folder selection supports native handles and a webkitdirectory fallback.",
+  "changes": [
+    "Filter unused native files/audio/archive data from loose VFS imports",
+    "Limit the catalogue to user-provided San Andreas files",
+    "Identify Winchester experimental scope and preserve corresponding source",
+    "Add actual File-based folder selection when showDirectoryPicker is unavailable",
+    "Keep fallback-selected files in the current desktop session without copying archives to IndexedDB",
+    "Use the Winchester mark and accessible folder-loading feedback"
+  ],
+  "artifacts": [
+    {
+      "path": "LICENSE",
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    {
+      "path": "OpenSA-preview-source.zip",
+      "bytes": 23507707,
+      "sha256": "1b3e73a78582b7e688c8b7257291176b889773282e9597c27a779e1da993a9b8"
+    },
+    {
+      "path": "runtime/.htaccess",
+      "bytes": 3115,
+      "sha256": "60bb3d9cedf21f458ce91f178c5e3dacddd33dabdb69fc2a2687bc854b89b8fd"
+    },
+    {
+      "path": "runtime/android-chrome-192x192.png",
+      "bytes": 8721,
+      "sha256": "ec7ed2b24435629a9af203129a54b3a65d5151afdebe2fc9e335c690aded7ee8"
+    },
+    {
+      "path": "runtime/android-chrome-512x512.png",
+      "bytes": 20249,
+      "sha256": "829604794096d965022e8e271500831db804d7383fb27d98e811afb0bf6c9489"
+    },
+    {
+      "path": "runtime/apple-touch-icon.png",
+      "bytes": 7932,
+      "sha256": "0c7a6079f9f1f961fe2b6fce71fabe444f6a8c1ff0ccda386ce4e3abd19ef4b0"
+    },
+    {
+      "path": "runtime/assets/canvas-host-BDj5DRxO.css",
+      "bytes": 1094,
+      "sha256": "12be3a7d347bf59bc1fccd486d77cbe1f2407fe3d9dfc02a982f09188d1e7c8d"
+    },
+    {
+      "path": "runtime/assets/canvas-host-CCzQAQxm.js",
+      "bytes": 2657544,
+      "sha256": "6c14c109783bcfe8c8e30082650178751166455e5507cd5c6b335e9e82ea34e6"
+    },
+    {
+      "path": "runtime/assets/main-Clmuasix.css",
+      "bytes": 5921,
+      "sha256": "7278bf12b9aae5308c384324b818987d418b9c6f2f733f8217d5f2b285b5b333"
+    },
+    {
+      "path": "runtime/assets/main-DT2iejRM.js",
+      "bytes": 781640,
+      "sha256": "476c748d29088f25e164c7fc27168cb586059a3d62bb426a4c461ae86345aef3"
+    },
+    {
+      "path": "runtime/assets/og.jpg",
+      "bytes": 125363,
+      "sha256": "6b5b3330614827a71fcd4ab4f5a91b8ededf763d7ca609288d5e206f1d7504e0"
+    },
+    {
+      "path": "runtime/assets/SixCaps-Regular-BVLr1ie3.ttf",
+      "bytes": 42660,
+      "sha256": "a707f13f97455f4addb3c38492bb473372db3cc03448b062be70d67c6bf4e599"
+    },
+    {
+      "path": "runtime/favicon-16x16.png",
+      "bytes": 450,
+      "sha256": "c5fa01f8a0daa925d43f70c4e4e5e4e2bde711e27406e8069043d3a8c38c6fbe"
+    },
+    {
+      "path": "runtime/favicon-32x32.png",
+      "bytes": 1061,
+      "sha256": "67c0e3ce0a400e431177e0fd34b46c3db32c529917ac22a92ef87064b2daf8ac"
+    },
+    {
+      "path": "runtime/favicon.ico",
+      "bytes": 15406,
+      "sha256": "27eea2c09f9e0a44b341eb11deb07bae4aa58b4dec8ded16d35e99e8139a17cc"
+    },
+    {
+      "path": "runtime/index.html",
+      "bytes": 2687,
+      "sha256": "bd4477932ffeb825a10d3b6357bc192793d77e596b96b4704e689250aea96dd3"
+    },
+    {
+      "path": "runtime/site.webmanifest",
+      "bytes": 391,
+      "sha256": "5e1734c4e496f9770be0e63629a5d054c3d8613174ba3882364cff077b01ef35"
+    }
+  ]
+}
