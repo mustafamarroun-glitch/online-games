@@ -36,7 +36,10 @@ if (sourceServer && process.env.GAME_PACKAGED !== '1') {
 const overrides = new Set((await readdir(new URL('../overrides/harness/', import.meta.url), { withFileTypes: true })).filter(entry => entry.isFile()).map(entry => entry.name));
 const contentTypes = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp' };
 const server = createServer(async (req, res) => {
-  const url = new URL(req.url, 'http://localhost');
+  if (!req.url?.startsWith('/') || req.url.startsWith('//')) { res.writeHead(400); res.end(); return; }
+  let url;
+  try { url = new URL(req.url, 'http://localhost'); decodeURIComponent(url.pathname); }
+  catch { res.writeHead(400); res.end(); return; }
   if (url.pathname === '/' || url.pathname === '/launcher.html') {
     res.writeHead(302, { location: '/harness/play.html' });
     res.end();
@@ -78,7 +81,8 @@ const server = createServer(async (req, res) => {
   }
   const name = url.pathname.startsWith('/harness/') ? url.pathname.slice('/harness/'.length) : '';
   const brandAsset = /^assets\/winchester\/(mark\.svg|home\.webp|icon-(192|512)\.png)$/.test(name);
-  if ((overrides.has(name) || brandAsset) && ['GET', 'HEAD'].includes(req.method)) {
+  const transferDependency = name === 'vendor/trystero-transfer-nostr.min.mjs';
+  if ((overrides.has(name) || brandAsset || transferDependency) && ['GET', 'HEAD'].includes(req.method)) {
     try {
       const body = await readFile(new URL(`../overrides/harness/${name}`, import.meta.url));
       res.writeHead(200, {
@@ -93,7 +97,7 @@ const server = createServer(async (req, res) => {
     } catch (error) { res.writeHead(500); res.end(error.message); }
     return;
   }
-  const proxied = httpRequest(new URL(req.url, upstream), {
+  const proxied = httpRequest(new URL(url.pathname + url.search, upstream), {
     method: req.method, headers: { ...req.headers, host: upstream.host },
   }, response => {
     res.writeHead(response.statusCode, response.headers);

@@ -781,7 +781,7 @@ function writeAll(output, bytes, at, label) {
       throw new Error(`Browser storage stopped accepting data while extracting ${label}; free browser or disk storage and try again`);
     }
     if (!Number.isInteger(written) || written < 0 || written > remaining) {
-      throw new Error(`${label}: invalid OPFS write result (${written} for ${remaining} bytes)`);
+      throw new Error(`Browser storage could not finish writing ${label}. Free browser storage or use a browser with more available storage, then try again (write result ${written} for ${remaining} bytes)`);
     }
     offset += written;
   }

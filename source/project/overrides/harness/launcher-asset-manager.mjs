@@ -1,3 +1,4 @@
+import { validateTransferredArchive } from "./archive-transfer-validation.mjs";
 import "./launcher-archive-specs.js";
 import {
   clearRetailPresentationCache,
@@ -803,6 +804,7 @@ class AssetLibrary {
             current.writer = null;
             const stored = await current.handle.getFile();
             if (stored.size !== current.bytes) throw new Error(`${current.name} was not stored completely`);
+            if (["archive", "cursor"].includes(current.kind)) await validateTransferredArchive(stored,current.entryCount);
             if (current.kind === "video") {
               Object.assign(files[index], parseBrowserBinkHeader(
                 new Uint8Array(await stored.slice(0, 44).arrayBuffer()), stored.size));

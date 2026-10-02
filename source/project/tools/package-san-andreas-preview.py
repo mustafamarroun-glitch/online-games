@@ -48,6 +48,7 @@ provenance = {
     'date': '2026-10-02',
     'scope': 'Winchester OS solo exploration preview. No campaign or multiplayer. Local folder selection supports native handles and a webkitdirectory fallback.',
     'changes': ['Filter unused native files/audio/archive data from loose VFS imports', 'Limit the catalogue to user-provided San Andreas files', 'Identify Winchester experimental scope and preserve corresponding source', 'Add actual File-based folder selection when showDirectoryPicker is unavailable', 'Keep fallback-selected files in the current desktop session without copying archives to IndexedDB', 'Use the Winchester mark and accessible folder-loading feedback'],
+    'buildDependencyReview': 'Lockfile-only advisory patches in package.json/package-lock.json; lifecycle scripts disabled. The previously verified compiled runtime is unchanged, and a fresh source build remains unverified.',
     'artifacts': artifacts,
 }
 (target / 'provenance.json').write_text(json.dumps(provenance, indent=2), encoding='utf-8')

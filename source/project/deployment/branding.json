@@ -1,7 +1,7 @@
 {
   "name": "Winchester OS",
   "shortName": "Winchester",
-  "version": "2.0.0-preview.2",
+  "version": "3.0.0-preview.1",
   "edition": "Home Edition",
   "tagline": "A little desktop. A place of your own.",
   "defaultDisplayName": "Winchester",

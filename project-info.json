@@ -1,7 +1,7 @@
 {
   "name": "Winchester OS",
-  "projectVersion": "2.0.0-preview.2",
-  "stage": "Version 2 testing preview",
+  "projectVersion": "3.0.0-preview.1",
+  "stage": "Version 3 testing preview",
   "reviewedAt": "2026-10-02",
   "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
   "sourceZipSha256": "91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e",
@@ -28,7 +28,16 @@
     "390px touch settings",
     "GitHub-style service-worker deployment preview"
   ],
-  "runtimeRegression": "Zero Hour engine artifacts unchanged from the verified V1 build. Zero Hour gameplay was not rerun for this identity milestone.",
+  "v3Verified": [
+    "Adversarial transfer and archive validation",
+    "Encrypted archive/cursor/mod delivery with two receivers",
+    "Interrupted-transfer retry",
+    "Public discovery with a forced receiving TURN relay",
+    "Embedded-browser isolation and script policy",
+    "Current build dependency advisories",
+    "Desktop and mobile regression checks"
+  ],
+  "runtimeRegression": "Zero Hour engine artifacts unchanged from the verified V1 build. Version 3 prepared actual local archives and started the threaded frame loop under the script policy without script exceptions or policy violations. Full matches were not rerun.",
   "sanAndreas": {
     "engine": "OpenSA 0.2.0",
     "scope": "Solo exploration and driving; original missions and multiplayer unavailable",

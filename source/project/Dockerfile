@@ -32,6 +32,7 @@ RUN echo '91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e  /tmp
 
 WORKDIR /opt/newshoes/WebAssembly
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+COPY overrides/build/package.json overrides/build/package-lock.json ./
 RUN npm ci --fetch-retries=1 --fetch-timeout=120000 --no-audit --no-fund
 
 ENV CMAKE_BUILD_PARALLEL_LEVEL=2

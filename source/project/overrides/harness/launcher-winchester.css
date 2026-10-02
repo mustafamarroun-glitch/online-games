@@ -117,3 +117,12 @@ input, textarea { caret-color: #176a93; }
 .san-andreas-footer { padding: 6px 10px; font: 11px Tahoma, sans-serif; background: #f4ecd9; color: #24384c; }
 .san-andreas-art { background: #16668d; color: #fff4d8; }
 .san-andreas-art svg { width: 36px; height: 36px; }
+
+/* Respect reduced motion and keep the active controls inside scrollable windows. */
+.window-body, .settings-panel, .transfer-body { overscroll-behavior: contain; }
+button, summary, .toolbar-button { touch-action: manipulation; }
+.transfer-heading h1 { text-wrap: balance; }
+#transferSenderMetrics, #transferReceiverMetrics { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

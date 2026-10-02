@@ -1,20 +1,23 @@
 {
   "schema": "cnc.harness-build-info.v1",
   "release": {
-    "version": "2.0.0-preview.2",
+    "version": "3.0.0-preview.1",
     "changelog": [
       {
-        "version": "Winchester OS V2 preview",
+        "version": "Winchester OS V3 preview",
         "date": "2026-10-02",
         "entries": [
           {
-            "text": "Original Winchester identity and Home wallpaper."
+            "text": "Automatic internet relay for encrypted game-file transfers."
           },
           {
-            "text": "Personal desktop name, three window colors, and simple or full shortcuts."
+            "text": "Transfer retry and cancellation, bounded input validation, and storage checks."
           },
           {
-            "text": "V1 game import, saves, replay storage, and ZIP backup retained."
+            "text": "Embedded browser isolation, script policy, safer backup and Version 3 review."
+          },
+          {
+            "text": "Winchester personalization, Zero Hour backups and San Andreas solo preview retained."
           },
           {
             "text": "Mac gameplay and internet multiplayer still need participant testing."
@@ -29,5 +32,5 @@
     "dirty": false
   },
   "engineVersion": "0.8.4",
-  "projectVersion": "2.0.0-preview.2"
+  "projectVersion": "3.0.0-preview.1"
 }

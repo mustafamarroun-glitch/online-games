@@ -94,6 +94,8 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
   }
 
   function formatBytes(bytes = 0) {
+    bytes = Number(bytes);
+    if (!Number.isFinite(bytes) || bytes < 0) bytes = 0;
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
@@ -120,7 +122,9 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
   function pathTo(nodeId) {
     const path = [];
     let node = nodeById(nodeId);
-    while (node) {
+    const seen = new Set();
+    while (node && !seen.has(node.id)) {
+      seen.add(node.id);
       path.unshift(node);
       node = node.parent ? nodeById(node.parent) : null;
     }
@@ -744,7 +748,9 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
     if (/^https?:\/\//i.test(address)) {
       try { return new URL(address).href; } catch { /* search for malformed URLs */ }
     }
-    if (/^[\w.-]+\.[a-z]{2,}/i.test(address)) return `https://${address}`;
+    if (/^[\w.-]+\.[a-z]{2,}/i.test(address)) {
+      try { return new URL(`https://${address}`).href; } catch { /* use a safe search URL */ }
+    }
     return `https://duckduckgo.com/?q=${encodeURIComponent(address)}`;
   }
 

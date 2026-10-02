@@ -1,12 +1,12 @@
 # Winchester OS — Home Edition
 
-**Version 2.0.0-preview.2 — testing preview.** A nostalgic personal gaming desktop based on [Project New Shoes](https://github.com/Agusx1211/NewShoes), with the locally compiled Zero Hour engine.
+**Version 3.0.0-preview.1 — testing preview.** A nostalgic personal gaming desktop based on [Project New Shoes](https://github.com/Agusx1211/NewShoes), with the locally compiled Zero Hour engine.
 
-Original Winchester branding and landscape wallpaper, a personal desktop name, three window colors, Simple/All shortcuts, and compact Settings. [V2 release notes](VERSION_2.md). The preserved V1 baseline is tagged v1.0.0.
+Original Winchester branding and landscape wallpaper, a personal desktop name, three window colors, Simple/All shortcuts, and compact Settings. [V3 release notes](VERSION_3.md) · [Security review](SECURITY_REVIEW.md). Previous releases remain at their tags.
 
 The site imports compatible game archives locally. Retail game data is not hosted or distributed here. Windows browser skirmish, sound, save/load, and desktop controls were tested. macOS gameplay, internet multiplayer, other editions, and long matches still need verification.
 
-V2 interface and migration checks passed locally and through the GitHub-style package. Zero Hour engine artifacts are unchanged from V1; Zero Hour gameplay was not rerun for this identity milestone.
+Version 3 includes an automatic internet relay, interrupted-transfer retry, bounded/validated transfer inputs, embedded-browser isolation, a script security policy, patched build lockfiles and safer backups. TURN client credentials are public on this static website; account login/admin credentials are excluded. Full retail-size transfers and physical two-device acceptance remain unverified.
 
 Version 2.0.0-preview.2 adds [San Andreas solo exploration](SAN_ANDREAS.md) to Game Library, desktop and Start, running in a Winchester OS window. Its separate OpenSA engine supports locally selected game files; a folder-upload fallback works without showDirectoryPicker. Multiplayer and original missions are unavailable. Native folder remembering is supported where available; fallback selections last for the current desktop session.
 

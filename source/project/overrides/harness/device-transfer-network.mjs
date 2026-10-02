@@ -41,21 +41,48 @@ export function saveTabRelay(servers) {
   else sessionStorage.removeItem(SESSION_KEY);
 }
 
+async function readNetworkJson(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let bytes = 0;
+  let text = '';
+  try {
+    while (true) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      bytes += chunk.value.byteLength;
+      if (bytes > 32 * 1024) throw new Error('The relay configuration is too large.');
+      text += decoder.decode(chunk.value, { stream: true });
+    }
+    return JSON.parse(text + decoder.decode());
+  } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
+}
+
 export async function loadTransferNetwork({ signal } = {}) {
+  const controller = new AbortController();
+  const abort = () => controller.abort(signal.reason);
+  if (signal?.aborted) abort();
+  else signal?.addEventListener('abort', abort, { once: true });
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try { return await readTransferNetwork(controller.signal); }
+  finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
+}
+
+async function readTransferNetwork(signal) {
   let servers = readTabRelay();
   if (!servers.length) {
     const response = await fetch(new URL('./device-transfer-network.json', import.meta.url), { cache: 'no-store', signal });
     if (!response.ok) throw new Error('Could not load connection settings. Please retry.');
-    const config = await response.json();
+    const config = await readNetworkJson(response);
     servers = validateIceServers(config.iceServers ?? []);
     if (config.credentialEndpoint) {
       const endpoint = new URL(config.credentialEndpoint, location.href);
       if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password) {
         throw new Error('The relay credential endpoint must use HTTPS.');
       }
-      const credentials = await fetch(endpoint, { cache: 'no-store', credentials: 'omit', signal });
+      const credentials = await fetch(endpoint, { cache: 'no-store', credentials: 'omit', redirect: 'error', signal });
       if (!credentials.ok) throw new Error('The internet relay is unavailable. Check its configuration or use the same Wi-Fi.');
-      servers = validateIceServers(await credentials.json());
+      servers = validateIceServers(await readNetworkJson(credentials));
       if (!hasTurnServers(servers)) throw new Error('The relay service did not return a TURN server.');
     }
   }

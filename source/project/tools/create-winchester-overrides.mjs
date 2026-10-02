@@ -1,10 +1,12 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { SECURITY_META } from '../deployment/security-policy.mjs';
 
 // Generate from the retained upstream snapshot and our V1 backup adaptation.
 // Never edit vendor or change the browser's game/filesystem storage identifiers.
 await import('./create-backup-overrides.mjs');
 const root = new URL('../', import.meta.url);
 const brand = JSON.parse(await readFile(new URL('deployment/branding.json', root), 'utf8'));
+const majorVersion = brand.version.split('.')[0];
 const project = JSON.parse(await readFile(new URL('deployment/project.json', root), 'utf8'));
 const source = new URL('vendor/NewShoes-main/WebAssembly/harness/', root);
 const output = new URL('overrides/harness/', root);
@@ -19,6 +21,8 @@ const rename = text => text.replaceAll('Project New Shoes', brand.name).replaceA
 
 let html = rename(await read('play.html'));
 html = html.replace('data-bink-video-sidecars="auto"', 'data-bink-video-sidecars="unavailable"')
+  .replace('<meta charset="utf-8">', `<meta charset="utf-8">\n    ${SECURITY_META}`)
+  .replace('sandbox="allow-forms allow-scripts allow-same-origin allow-popups"', 'sandbox="allow-forms allow-scripts allow-popups" referrerpolicy="no-referrer"')
   .replace(/<title>.*?<\/title>/, `<title>${brand.name} · Home Edition</title>`)
   .replace('./assets/brand/project-new-shoes.ico', brand.logo)
   .replace('./assets/brand/project-new-shoes-apple-touch.png', './assets/winchester/icon-192.png')
@@ -28,6 +32,7 @@ html = html.replace('data-bink-video-sidecars="auto"', 'data-bink-video-sidecars
   .replaceAll('newshoes://', 'winchester://')
   .replace('Runtime available', 'Open browser and hardware details');
 html = html.replaceAll(`${brand.name} Game Launcher`, 'Game Launcher').replaceAll(`${brand.name} Browser`, 'Browser');
+html = html.replace('id="browserAddress"', 'id="browserAddress" aria-label="Website address" name="websiteAddress" autocomplete="off" spellcheck="false"');
 html = html.replace(`${brand.name} Launcher</span>`, 'Game Launcher</span>');
 html = replaceOnce(html, '<div><span>NEW <span class="brand-h">SHOES</span></span><strong>PROJECT COMMAND CENTER</strong></div>',
   `<div><span>Winchester<span class="brand-h"> OS</span></span><strong>${brand.edition}</strong></div>`);
@@ -36,7 +41,7 @@ html = html.replace('<p class="wizard-side-copy">Local assets.<br>Real engine.<b
   .replace('Choose your original Generals and Zero Hour disc images, or an existing Zero Hour installation. We only inspect the files needed to prepare the game.', 'Select the Data folder from your compatible combined English installation. Your game files stay in this browser.')
   .replace(/<button type="button" class="source-card" id="pickImageButton">[\s\S]*?<\/button>/, '<button type="button" class="source-card" id="pickImageButton" disabled hidden aria-hidden="true">Disc import is unavailable in this profile.</button>')
   .replace('<h1>NEW <span>SHOES</span></h1>', '<h1>Winchester <span>OS</span></h1>')
-  .replace('<small>Independent browser runtime</small>', `<small>${brand.edition} · V2 preview</small>`)
+  .replace('<small>Independent browser runtime</small>', `<small>${brand.edition} · V${majorVersion} preview</small>`)
   .replace('<dt>Build commit</dt>', '<dt>Engine source</dt>')
   .replace('Command Net and the open web', 'Your home page and the web')
   .replace('Classic XP games, command-approved', 'A few familiar classics')
@@ -46,13 +51,13 @@ html = html.replace('<p class="wizard-side-copy">Local assets.<br>Real engine.<b
   .replace('Expand a set to inspect its archives', 'Expand the installed library to download a ZIP or individual archives');
 html = html.replace(/<p class="about-resources">[\s\S]*?<\/p>/,
   `<p class="about-resources"><a href="${brand.repository}" target="_blank" rel="noopener noreferrer">Winchester OS source</a><span> · </span><a href="${brand.upstreamRepository}" target="_blank" rel="noopener noreferrer">New Shoes engine</a></p>`)
-  .replace('https://github.com/Agusx1211/NewShoes/blob/main/CHANGELOG.md', `${brand.repository}/blob/main/VERSION_2.md`)
+  .replace('https://github.com/Agusx1211/NewShoes/blob/main/CHANGELOG.md', `${brand.repository}/blob/main/VERSION_${majorVersion}.md`)
   .replace(/<p class="about-legal">[\s\S]*?<\/p>/,
     '<p class="about-legal">Winchester OS is based on Project New Shoes. Original engine copyright © Electronic Arts Inc. and Project New Shoes contributors. EA has not endorsed this project. Game files are supplied locally by each player. <a href="../LICENSE.md" target="_blank" rel="noopener">License and notices</a></p>');
 html = html.replace(/(<a class="desktop-icon desktop-icon-link"[^>]*href=")[^"]+/, `$1${brand.repository}`);
 html = replaceOnce(html, '<span class="user-avatar">C</span><div><strong>Commander</strong>', '<span class="user-avatar" data-winchester-avatar>W</span><div><strong data-winchester-name>Winchester</strong>');
 html = replaceOnce(html, '<nav class="desktop-icons" aria-label="Desktop shortcuts">',
-  `<aside class="winchester-desktop-brand" aria-label="${brand.name}"><img src="${brand.logo}" width="56" height="56" alt=""><div><h1>Winchester <span>OS</span></h1><p>${brand.edition} · Version 2 preview</p><span data-winchester-greeting>Welcome home, Winchester.</span></div></aside>\n      <nav class="desktop-icons" aria-label="Desktop shortcuts">`);
+  `<aside class="winchester-desktop-brand" aria-label="${brand.name}"><img src="${brand.logo}" width="56" height="56" alt=""><div><h1>Winchester <span>OS</span></h1><p>${brand.edition} · Version ${majorVersion} preview</p><span data-winchester-greeting>Welcome home, Winchester.</span></div></aside>\n      <nav class="desktop-icons" aria-label="Desktop shortcuts">`);
 html = html.replace('<svg class="start-command-mark"><use href="#i-system"/></svg>', `<img class="start-command-mark" src="${brand.logo}" alt="">`);
 html = html.replace('<div class="wallpaper-options">', '<div class="wallpaper-options"><button type="button" class="wallpaper-swatch winchester" data-set-wallpaper="winchester" aria-label="Winchester Home wallpaper"></button>');
 html = replaceOnce(html, '<p class="eyebrow">APPEARANCE</p><h1>Make it feel like home</h1>',
@@ -89,10 +94,11 @@ await put('launcher.js', launcher);
 await put('launcher-entry.mjs', (await read('launcher-entry.mjs')) + '\nimport "./launcher-winchester.mjs";\nimport "./launcher-san-andreas.mjs";\n');
 await put('launcher-os-shutdown.mjs', (await read('launcher-os-shutdown.mjs')).replace('https://github.com/Agusx1211/NewShoes', brand.repository));
 await put('launcher-build-info.js', (await read('launcher-build-info.js')).replace('`v${version} · ${shortCommit}${info.git?.dirty ? "+dirty" : ""}`', '`Winchester OS · v${version}`'));
-await put('build-info.json', JSON.stringify({ schema: 'cnc.harness-build-info.v1', release: { version: brand.version, changelog: [{ version: 'Winchester OS V2 preview', date: '2026-10-02', entries: [
-  { text: 'Original Winchester identity and Home wallpaper.' },
-  { text: 'Personal desktop name, three window colors, and simple or full shortcuts.' },
-  { text: 'V1 game import, saves, replay storage, and ZIP backup retained.' },
+await put('build-info.json', JSON.stringify({ schema: 'cnc.harness-build-info.v1', release: { version: brand.version, changelog: [{ version: `Winchester OS V${majorVersion} preview`, date: '2026-10-02', entries: [
+  { text: 'Automatic internet relay for encrypted game-file transfers.' },
+  { text: 'Transfer retry and cancellation, bounded input validation, and storage checks.' },
+  { text: 'Embedded browser isolation, script policy, safer backup and Version 3 review.' },
+  { text: 'Winchester personalization, Zero Hour backups and San Andreas solo preview retained.' },
   { text: 'Mac gameplay and internet multiplayer still need participant testing.' }
 ] }] }, git: { commit: project.upstreamCommit, shortCommit: project.upstreamCommit.slice(0, 7), dirty: false }, engineVersion: '0.8.4', projectVersion: brand.version }, null, 2));
 await put('manifest.webmanifest', JSON.stringify({ name: brand.name, short_name: brand.shortName, description: brand.tagline, start_url: './play.html', scope: './', display: 'fullscreen', background_color: '#16668d', theme_color: '#16668d', icons: [192, 512].map(size => ({ src: `./assets/winchester/icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png', purpose: 'any' })) }, null, 2));
@@ -122,6 +128,10 @@ apps = apps.replaceAll('newshoes://', 'winchester://').replaceAll('NEWSHOES://',
   .replaceAll('New Shoes Drive', 'Winchester Drive');
 apps = apps.replace('drive?.name === "Winchester Drive"', 'drive?.name === "New Shoes Drive"');
 apps = replaceOnce(apps, '    const address = value.trim();', '    const address = value.trim().replace(new RegExp("^newshoes://", "i"), "winchester://");');
+apps = replaceOnce(apps, '    if (/^[\\w.-]+\\.[a-z]{2,}/i.test(address)) return `https://${address}`;',
+  '    if (/^[\\w.-]+\\.[a-z]{2,}/i.test(address)) {\n      try { return new URL(`https://${address}`).href; } catch { /* use a safe search URL */ }\n    }');
+apps = replaceOnce(apps, '    while (node) {', '    const seen = new Set();\n    while (node && !seen.has(node.id)) {\n      seen.add(node.id);');
+apps = replaceOnce(apps, '  function formatBytes(bytes = 0) {', '  function formatBytes(bytes = 0) {\n    bytes = Number(bytes);\n    if (!Number.isFinite(bytes) || bytes < 0) bytes = 0;');
 apps = apps.replace('WINCHESTER OS LOCAL INTRANET', 'WINCHESTER OS HOME').replace('<h1>COMMAND NET</h1>', '<h1>Welcome home.</h1>')
   .replace('Local services are online. Choose a channel.', 'Your games, your files, and a few familiar places.')
   .replace('FIELD MANUAL', 'DESKTOP HELP').replace('Command-approved downtime', 'A few familiar classics')
@@ -148,3 +158,4 @@ apps = replaceOnce(apps, '      page.innerHTML = browserPages[address];', `     
 await put('launcher-desktop-apps.js', apps);
 console.log(`Generated ${brand.name} ${brand.version}; retained vendor and V1 storage identifiers.`);
 await import('./create-transfer-overrides.mjs');
+await import('./create-security-overrides.mjs');

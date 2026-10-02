@@ -65,3 +65,4 @@ worker = replaceOnce(worker, '  const archiveSize = u32(header, 4);',
     : bigEndianSize === reader.size ? bigEndianSize : littleEndianSize;`);
 await writeFile(new URL('launcher-asset-worker.js', outputRoot), worker);
 console.log('Generated combined-installation contract, library manager, and archive validator overrides.');
+await import('./create-security-overrides.mjs');

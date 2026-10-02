@@ -13,6 +13,7 @@
     "Keep fallback-selected files in the current desktop session without copying archives to IndexedDB",
     "Use the Winchester mark and accessible folder-loading feedback"
   ],
+  "buildDependencyReview": "Lockfile-only advisory patches in package.json/package-lock.json; lifecycle scripts disabled. The previously verified compiled runtime is unchanged, and a fresh source build remains unverified.",
   "artifacts": [
     {
       "path": "LICENSE",
@@ -21,8 +22,8 @@
     },
     {
       "path": "OpenSA-preview-source.zip",
-      "bytes": 23507707,
-      "sha256": "1b3e73a78582b7e688c8b7257291176b889773282e9597c27a779e1da993a9b8"
+      "bytes": 23505519,
+      "sha256": "ca4d98ddd8abbeb2a80a061852886a78238477f318dbf223fafc831455078983"
     },
     {
       "path": "runtime/.htaccess",

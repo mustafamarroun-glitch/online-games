@@ -1,5 +1,6 @@
-import { joinRoom } from "./vendor/trystero-nostr.min.mjs";
+import { joinRoom } from "./vendor/trystero-transfer-nostr.min.mjs";
 import { loadTransferNetwork, connectionHelp, readTabRelay, saveTabRelay, testTransferRelay } from './device-transfer-network.mjs';
+import { validateCombinedManifest, validateTransferMessage } from './device-transfer-validation.mjs';
 import { hybridNostrRelayUrls } from "./webrtc-udp-endpoint.mjs";
 import { loadActiveModContext } from "./mod-context.mjs";
 import {
@@ -33,6 +34,8 @@ const state = {
   senderPeer: null,
   senderPeers: new Map(),
   receiveQueues: new Map(),
+  peerEpochs: new Map(),
+  queuedBytes: new Map(),
   signals: new Map(),
   incoming: null,
   metricsTimer: null,
@@ -54,6 +57,7 @@ function connectionFailed() {
     alert.hidden = false;
     document.querySelector('#transferRetryReceive').hidden = false;
   } else if (state.mode === 'sender') {
+    if ([...state.senderPeers.values()].some(peer => ['preparing','sending','complete'].includes(peer.status))) return;
     document.querySelector('#transferSenderStatus').textContent = message;
   }
 }
@@ -132,44 +136,16 @@ function rejectSignals(reason, peerId = null) {
   }
 }
 
-async function sendEncrypted(peerId, message, payload = null) {
-  if (!state.action || !state.key) throw new Error("Transfer connection is closed");
-  const envelope = await sealTransferMessage(state.key, message, payload);
-  await state.action.send(envelope, { target: peerId });
-}
-
-function validateCombinedManifest(value) {
-  if (value?.version !== DEVICE_TRANSFER_VERSION || value?.game !== "zeroHour"
-      || !Array.isArray(value.files) || !value.files.length) {
-    throw new Error("The sender returned an invalid Zero Hour manifest");
-  }
-  const files = value.files.map((file) => ({
-    id: String(file?.id ?? ""),
-    kind: String(file?.kind ?? ""),
-    name: String(file?.name ?? ""),
-    bytes: Number(file?.bytes),
-    ...(["archive", "cursor"].includes(file?.kind)
-      ? { entryCount: Number(file?.entryCount) } : {}),
-  }));
-  const ids = new Set(files.map((file) => file.id));
-  if (files.some((file) => !file.id
-      || !["archive", "video", "cursor", "mod-archive", "save", "replay"].includes(file.kind)
-      || !file.name || !Number.isSafeInteger(file.bytes) || file.bytes <= 0)
-      || ids.size !== files.length) {
-    throw new Error("The sender returned an invalid file list");
-  }
-  const modFiles = files.filter((file) => file.kind === "mod-archive");
-  const mods = value.mods ?? null;
-  if (Boolean(modFiles.length) !== Boolean(mods)) {
-    throw new Error("The sender returned incomplete mod transfer metadata");
-  }
-  const totalBytes = files.reduce((sum, file) => sum + file.bytes, 0);
-  if (!Number.isSafeInteger(totalBytes) || totalBytes <= 0) throw new Error("Transfer size is invalid");
-  const modContextId = String(value?.modContextId ?? "vanilla");
-  if (!/^(?:vanilla|[a-f0-9]{64})$/.test(modContextId)) {
-    throw new Error("The sender returned an invalid mod configuration identity");
-  }
-  return { version: DEVICE_TRANSFER_VERSION, game: "zeroHour", modContextId, files, mods, totalBytes };
+async function sendEncrypted(peerId, message, payload = null, validate = null) {
+  const action = state.action;
+  const key = state.key;
+  if (!action || !key) throw new Error("Transfer connection is closed");
+  validate?.();
+  const envelope = await sealTransferMessage(key, message, payload);
+  validate?.();
+  if (action !== state.action || key !== state.key) throw new Error('Transfer stopped');
+  await action.send(envelope, { target: peerId });
+  validate?.();
 }
 
 async function createOutgoingSource({ includeMods, includeSaves, includeReplays }) {
@@ -257,7 +233,10 @@ function renderSenderPeers() {
 }
 
 async function sendToReceiver(peerId, hello, token) {
-  if (state.senderPeers.has(peerId)) return;
+  const previous = state.senderPeers.get(peerId);
+  if (previous && previous.status !== 'failed') return;
+  if (!previous && [...state.senderPeers.values()].filter(peer => peer.status !== 'failed').length >= 4) return;
+  if (previous) rejectSignals(new Error('Transfer restarted'),peerId);
   const peer = {
     peerId,
     label: String(hello.device || "Receiving device").slice(0, 60),
@@ -268,31 +247,38 @@ async function sendToReceiver(peerId, hello, token) {
     error: null,
   };
   state.senderPeers.set(peerId, peer);
+  const checkCurrent = () => {
+    if (token !== state.token || state.senderPeers.get(peerId) !== peer || peer.status === 'failed') {
+      throw new Error('Transfer stopped');
+    }
+  };
+  const send = (message,payload = null) => sendEncrypted(peerId,message,payload,checkCurrent);
   renderSenderPeers();
   try {
     const transferId = crypto.randomUUID();
     const ready = waitForSignal(peerId, "ready", transferId);
-    await sendEncrypted(peerId, {
+    await send({
       type: "manifest",
       transferId,
       manifest: state.outgoing.manifest,
     });
     await ready;
-    if (token !== state.token) throw new Error("Transfer stopped");
+    checkCurrent();
     peer.status = "sending";
     let sequence = 0;
     let sinceCheckpoint = 0;
     for (const file of state.outgoing.manifest.files) {
-      await sendEncrypted(peerId, { type: "file-start", transferId, fileId: file.id });
+      await send({ type: "file-start", transferId, fileId: file.id });
       for (let offset = 0; offset < file.bytes;) {
         const length = Math.min(DEVICE_TRANSFER_CHUNK_BYTES, file.bytes - offset);
         const bytes = await state.outgoing.readChunk(file.id, offset, length);
+        checkCurrent();
         if (bytes.byteLength !== length) throw new Error(`${file.name} changed during transfer`);
         sinceCheckpoint += bytes.byteLength;
         const checkpoint = sinceCheckpoint >= DEVICE_TRANSFER_CHECKPOINT_BYTES;
         const seq = checkpoint ? ++sequence : 0;
-        const acknowledged = checkpoint ? waitForSignal(peerId, "ack", seq) : null;
-        await sendEncrypted(peerId, {
+        const acknowledged = checkpoint ? waitForSignal(peerId, "ack", `${transferId}:${seq}`) : null;
+        await send({
           type: "chunk",
           transferId,
           fileId: file.id,
@@ -306,20 +292,22 @@ async function sendToReceiver(peerId, hello, token) {
           await acknowledged;
           sinceCheckpoint = 0;
         }
-        if (token !== state.token) throw new Error("Transfer stopped");
+        checkCurrent();
       }
       const seq = ++sequence;
-      const fileComplete = waitForSignal(peerId, "ack", seq);
-      await sendEncrypted(peerId, { type: "file-end", transferId, fileId: file.id, seq });
+      const fileComplete = waitForSignal(peerId, "ack", `${transferId}:${seq}`);
+      await send({ type: "file-end", transferId, fileId: file.id, seq });
       await fileComplete;
+      checkCurrent();
       sinceCheckpoint = 0;
     }
     const complete = waitForSignal(peerId, "complete", transferId);
-    await sendEncrypted(peerId, { type: "complete", transferId });
+    await send({ type: "complete", transferId });
     await complete;
+    checkCurrent();
     peer.status = "complete";
   } catch (error) {
-    rejectSignals(error, peerId);
+    if (state.senderPeers.get(peerId) === peer) rejectSignals(error, peerId);
     peer.status = "failed";
     peer.error = safeError(error);
   }
@@ -352,9 +340,15 @@ function renderReceiverProgress() {
     `${Math.floor(incoming.received / incoming.totalBytes * 100)}% received`;
 }
 
-async function prepareIncoming(message) {
+async function prepareIncoming(message, validate) {
   if (state.incoming) throw new Error("The sender tried to start a second transfer");
   const manifest = validateCombinedManifest(message.manifest);
+  const estimate = await navigator.storage?.estimate?.().catch(() => null);
+  validate();
+  if (Number.isFinite(estimate?.quota) && Number.isFinite(estimate?.usage)
+      && manifest.totalBytes > Math.max(0, estimate.quota - estimate.usage)) {
+    throw new Error('Not enough browser storage for these files. Free space in My Files, then retry.');
+  }
   const gameFiles = manifest.files.filter((file) =>
     file.kind === "archive" || file.kind === "video" || file.kind === "cursor");
   const modFiles = manifest.files.filter((file) => file.kind === "mod-archive");
@@ -373,6 +367,7 @@ async function prepareIncoming(message) {
   let modSession = null;
   let userSession = null;
   try {
+    validate();
     if (manifest.mods) {
       modSession = await window.ZeroHModManager.store.beginTransferImport(
         manifest.mods,
@@ -386,8 +381,9 @@ async function prepareIncoming(message) {
       }
       userSession = await window.CnCPort.beginTransferUserDataImport(userFiles, manifest.modContextId);
     }
+    validate();
   } catch (error) {
-    await Promise.allSettled([gameSession.abort(), modSession?.abort?.()]);
+    await Promise.allSettled([gameSession.abort(), modSession?.abort?.(), userSession?.abort?.()]);
     throw error;
   }
   state.incoming = {
@@ -429,7 +425,7 @@ function sessionForFile(incoming, file) {
   return incoming.userSession;
 }
 
-async function handleReceiverMessage(peerId, message, payload) {
+async function handleReceiverMessage(peerId, message, payload, validate) {
   if (message.type === "hello") {
     if (message.role !== "sender") return;
     if (state.senderPeer && state.senderPeer !== peerId) return;
@@ -442,7 +438,7 @@ async function handleReceiverMessage(peerId, message, payload) {
   }
   if (peerId !== state.senderPeer) return;
   if (message.type === "manifest") {
-    await prepareIncoming(message);
+    await prepareIncoming(message, validate);
     return;
   }
   if (message.type === "file-start") {
@@ -459,6 +455,7 @@ async function handleReceiverMessage(peerId, message, payload) {
       throw new Error("Incoming file chunk is invalid or out of order");
     }
     await sessionForFile(incoming, file).writeChunk(file.id, message.offset, payload);
+    validate();
     incoming.fileReceived += payload.byteLength;
     incoming.received += payload.byteLength;
     renderReceiverProgress();
@@ -471,6 +468,7 @@ async function handleReceiverMessage(peerId, message, payload) {
     const { incoming, file } = currentIncomingFile(message);
     if (incoming.fileReceived !== file.bytes) throw new Error(`${file.name} is incomplete`);
     await sessionForFile(incoming, file).finishFile(file.id);
+    validate();
     incoming.fileIndex += 1;
     incoming.fileReceived = 0;
     await sendEncrypted(peerId, { type: "ack", transferId: incoming.transferId, seq: message.seq });
@@ -483,8 +481,11 @@ async function handleReceiverMessage(peerId, message, payload) {
       throw new Error("Transfer completed before all files arrived");
     }
     const importedUserFiles = incoming.userSession ? await incoming.userSession.finish() : [];
+    validate();
     await incoming.gameSession.finish();
+    validate();
     const importedMods = incoming.modSession ? await incoming.modSession.finish() : null;
+    validate();
     await sendEncrypted(peerId, { type: "complete-ack", transferId: incoming.transferId });
     state.incoming = null;
     const additions = [];
@@ -514,7 +515,7 @@ async function handleSenderMessage(peerId, message) {
     return;
   }
   if (message.type === "ack") {
-    resolveSignal(peerId, "ack", String(message.seq), message);
+    resolveSignal(peerId, "ack", `${message.transferId}:${message.seq}`, message);
     return;
   }
   if (message.type === "complete-ack") {
@@ -525,15 +526,26 @@ async function handleSenderMessage(peerId, message) {
 function queueIncomingEnvelope(peerId, raw) {
   const token = state.token;
   const key = state.key;
+  const epoch = state.peerEpochs.get(peerId) ?? 0;
+  const current = () => token === state.token && epoch === (state.peerEpochs.get(peerId) ?? 0);
+  const validate = () => { if (!current()) throw new Error('Transfer stopped'); };
+  // Bound application backlog before decrypting. Trystero still assembles its own frames.
+  if (!state.receiveQueues.has(peerId) && state.receiveQueues.size >= 8) return;
+  const bytes = Number(raw?.byteLength);
+  const pendingBytes = state.queuedBytes.get(peerId) ?? 0;
+  if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 128 * 1024 + 33
+      || pendingBytes + bytes > 8 * 1024 * 1024) return;
+  state.queuedBytes.set(peerId, pendingBytes + bytes);
   const previous = state.receiveQueues.get(peerId) ?? Promise.resolve();
   const queued = previous.then(async () => {
-    if (token !== state.token) return;
+    if (!current()) return;
     const { message, payload } = await openTransferMessage(key, raw);
-    if (token !== state.token) return;
+    if (!current()) return;
+    validateTransferMessage(message, payload);
     if (state.mode === "sender") await handleSenderMessage(peerId, message, payload);
-    if (state.mode === "receiver") await handleReceiverMessage(peerId, message, payload);
+    if (state.mode === "receiver") await handleReceiverMessage(peerId, message, payload, validate);
   }).catch(async (error) => {
-    if (token !== state.token) return;
+    if (!current()) return;
     if (state.mode === "sender") {
       const peer = state.senderPeers.get(peerId);
       if (peer) { peer.status = "failed"; peer.error = safeError(error); renderSenderPeers(); }
@@ -543,7 +555,10 @@ function queueIncomingEnvelope(peerId, raw) {
       alert.textContent = safeError(error);
       alert.hidden = false;
       document.querySelector("#transferReceiveTitle").textContent = "Transfer failed";
+      document.querySelector('#transferRetryReceive').hidden = false;
     }
+  }).finally(() => {
+    if (current()) state.queuedBytes.set(peerId, Math.max(0, (state.queuedBytes.get(peerId) ?? 0) - bytes));
   });
   state.receiveQueues.set(peerId, queued);
 }
@@ -592,7 +607,10 @@ async function openRoom(pin, mode) {
   };
   room.onPeerLeave = (peerId) => {
     if (token !== state.token || state.room !== room) return;
+    if (room.getPeers()[peerId]?.connectionState === 'connected') return;
+    state.peerEpochs.set(peerId,(state.peerEpochs.get(peerId) ?? 0) + 1);
     state.receiveQueues.delete(peerId);
+    state.queuedBytes.delete(peerId);
     rejectSignals(new Error("Device disconnected"), peerId);
     if (mode === "sender") {
       const peer = state.senderPeers.get(peerId);
@@ -606,6 +624,7 @@ async function openRoom(pin, mode) {
       const alert = document.querySelector("#transferLiveError");
       alert.textContent = "The sending device disconnected before the transfer completed.";
       alert.hidden = false;
+      document.querySelector('#transferRetryReceive').hidden = false;
     }
   };
   if (mode === 'receiver') state.connectionTimer = setTimeout(() => {
@@ -638,6 +657,8 @@ async function stopSession({ screen = "choose" } = {}) {
   state.senderPeer = null;
   state.senderPeers.clear();
   state.receiveQueues.clear();
+  state.peerEpochs.clear();
+  state.queuedBytes.clear();
   document.querySelector("#transferSendOwnership").checked = false;
   document.querySelector("#transferReceiveOwnership").checked = false;
   document.querySelector("#transferReceiveNext").disabled = true;
@@ -785,6 +806,31 @@ function formRelay() {
   return [{ urls, username: document.querySelector('#transferRelayUser').value.trim(), credential: document.querySelector('#transferRelayPassword').value }];
 }
 const savedRelay = readTabRelay()[0];
+let networkStatusVersion = 0;
+async function showWebsiteRelayStatus() {
+  const version = ++networkStatusVersion;
+  const status = document.querySelector('#transferNetworkStatus');
+  if (readTabRelay().length) {
+    status.textContent = 'Relay saved for this tab. Test its connection before starting a transfer.';
+    return;
+  }
+  status.textContent = 'Checking website connection settings…';
+  try {
+    const network = await loadTransferNetwork();
+    if (version !== networkStatusVersion) return;
+    status.textContent = network.relayConfigured
+      ? 'Internet relay configured for this website. Both devices use it automatically; enter only the transfer code. You can test the relay below.'
+      : 'No internet relay configured. Enter relay details on both devices, or use the same Wi-Fi with VPNs off.';
+  } catch (error) {
+    if (version === networkStatusVersion) status.textContent = safeError(error);
+  }
+}
+document.querySelector('#transferNetworkSettings').addEventListener('toggle', () => {
+  if (document.querySelector('#transferNetworkSettings').open && !document.querySelector('#transferRelayUrl').value.trim()) {
+    void showWebsiteRelayStatus();
+  }
+});
+document.querySelector('#transferRelayForm').addEventListener('input', () => { networkStatusVersion++; });
 if (savedRelay) {
   document.querySelector('#transferRelayUrl').value = savedRelay.urls.join('\n');
   document.querySelector('#transferRelayUser').value = savedRelay.username;
@@ -793,6 +839,7 @@ if (savedRelay) {
 }
 document.querySelector('#transferRelayForm').addEventListener('submit', event => {
   event.preventDefault();
+  networkStatusVersion++;
   const status = document.querySelector('#transferNetworkStatus');
   try {
     saveTabRelay(formRelay());
@@ -802,18 +849,24 @@ document.querySelector('#transferRelayForm').addEventListener('submit', event =>
 document.querySelector('#transferRelayClear').addEventListener('click', () => {
   saveTabRelay([]);
   document.querySelector('#transferRelayForm').reset();
-  document.querySelector('#transferNetworkStatus').textContent = 'Tab relay removed. Direct transfer is available; restricted networks need a relay.';
+  void showWebsiteRelayStatus();
 });
 document.querySelector('#transferRelayTest').addEventListener('click', async event => {
   const button = event.currentTarget;
   const status = document.querySelector('#transferNetworkStatus');
+  const version = ++networkStatusVersion;
   button.disabled = true;
   status.textContent = 'Checking the relay connection…';
   try {
-    await testTransferRelay(formRelay());
-    saveTabRelay(formRelay());
-    status.textContent = 'Relay responded and is saved for this tab. Configure the receiving device too, then start the transfer.';
-  } catch (error) { status.textContent = safeError(error); }
+    const manual = [...document.querySelectorAll('#transferRelayUrl, #transferRelayUser, #transferRelayPassword')].some(input => input.value.trim());
+    const servers = manual ? formRelay() : (await loadTransferNetwork()).iceServers;
+    await testTransferRelay(servers);
+    if (version !== networkStatusVersion) return;
+    if (manual) saveTabRelay(servers);
+    status.textContent = manual
+      ? 'Relay responded and is saved for this tab. Configure the receiving device too, then start the transfer.'
+      : 'Website relay responded. Both devices use it automatically; you can start the transfer.';
+  } catch (error) { if (version === networkStatusVersion) status.textContent = safeError(error); }
   finally { button.disabled = false; }
 });
 document.querySelector("#transferDone").addEventListener("click", () => void stopSession());
