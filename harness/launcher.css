@@ -990,3 +990,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
   }
   .task-button span { display: block; }
 }
+
+.managed-storage-file-download { grid-template-columns: minmax(0, 1fr) 72px auto; align-items: center; }
+.managed-storage-file-download > span:nth-child(2) { text-align: right; }
+.managed-storage-file-download > button { min-height: 28px; }
