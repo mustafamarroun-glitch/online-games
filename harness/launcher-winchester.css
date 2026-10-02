@@ -1,0 +1,109 @@
+/* Winchester Home Edition: familiar desktop materials, original identity. */
+#desktop {
+  --wc-light: #4caacb;
+  --wc-mid: #197ba5;
+  --wc-deep: #10577e;
+  --wc-text: #ffffff;
+}
+#desktop[data-winchester-accent="classic"] { --wc-light: #4d9af1; --wc-mid: #1e65cf; --wc-deep: #124499; }
+#desktop[data-winchester-accent="silver"] { --wc-light: #9daebc; --wc-mid: #697f91; --wc-deep: #425867; }
+.desktop[data-wallpaper="winchester"] .wallpaper-art {
+  background: #29769d url('./assets/winchester/home.webp') center / cover no-repeat;
+  filter: none;
+}
+.desktop[data-wallpaper="winchester"] .wallpaper-art::before {
+  background: linear-gradient(90deg, rgba(13, 32, 52, .28), transparent 32%);
+}
+.desktop[data-wallpaper="winchester"] .sun-glow,
+.desktop[data-wallpaper="winchester"] .ridge,
+.desktop[data-wallpaper="winchester"] .terrain-grid { display: none; }
+.wallpaper-swatch.winchester { background: #29769d url('./assets/winchester/home.webp') center / cover; }
+.winchester-desktop-brand { position: absolute; z-index: 2; top: 40px; right: 44px; display: flex; align-items: center; gap: 15px; color: #fff; text-shadow: 0 2px 5px #16496b; max-width: calc(100% - 150px); }
+.winchester-desktop-brand img { flex: 0 0 56px; filter: drop-shadow(0 3px 6px #16496b66); }
+.winchester-desktop-brand h1 { margin: 0; font: bold 28px/1.2 Tahoma, Verdana, sans-serif; letter-spacing: -.8px; }
+.winchester-desktop-brand h1 span { font-weight: normal; }
+.winchester-desktop-brand p { margin: 5px 0 14px; font-size: 11px; }
+.winchester-desktop-brand [data-winchester-greeting] { display: block; max-width: 340px; overflow-wrap: anywhere; font-size: 12px; }
+.desktop[data-winchester-mode="simple"] .desktop-icons [data-winchester-advanced] { display: none; }
+.desktop-icons { top: 22px; left: 18px; grid-template-rows: repeat(7, 82px); grid-auto-columns: 96px; gap: 5px; }
+.desktop-icon { width: 96px; min-height: 80px; }
+.desktop-icon > span:last-child { font-size: 11px; line-height: 1.3; text-shadow: 1px 2px 3px #152c40; }
+.desktop-icon:hover, .desktop-icon:focus-visible { background: #145c8a99; }
+.window { border-color: var(--wc-deep); border-top-color: var(--wc-mid); }
+.titlebar, .start-menu > header, .taskbar { color: var(--wc-text); background: linear-gradient(180deg, var(--wc-light), var(--wc-mid) 18%, var(--wc-deep) 90%, var(--wc-mid)); }
+.titlebar { box-shadow: inset 0 1px 1px #ffffff77, inset 0 -1px #123e6288; }
+.titlebar-title { text-shadow: 1px 1px #174466; }
+.window-controls button:not(:last-child) { background: linear-gradient(135deg, var(--wc-light), var(--wc-mid) 48%, var(--wc-deep)); }
+.taskbar { border-top-color: var(--wc-light); box-shadow: inset 0 1px #ffffff55; }
+.start-button { background: linear-gradient(#78ad78, #397f59 40%, #24653f 85%, #41855b); }
+.tray { background: linear-gradient(#ffffff1c, #ffffff05); }
+.wizard-side { background: #16688b url('./assets/winchester/home.webp') 35% center / auto 100% no-repeat; }
+.wizard-side::before { background: linear-gradient(180deg, #123f5577, #123f55f0 72%); }
+.wizard-side::after, .wizard-brand::after, .wizard-side-copy::after { display: none; }
+.wizard-brand { padding-bottom: 20px; justify-content: flex-start; }
+.wizard-brand .zeroh-mark { width: 44px; height: 44px; }
+.wizard-brand > div { font-family: Tahoma, Verdana, sans-serif; }
+.wizard-brand > div > span { font-size: 19px; line-height: 1.25; font-weight: bold; letter-spacing: -.5px; }
+.wizard-brand .brand-h { color: #f7d48a; }
+.wizard-brand > div > strong { margin-top: 7px; color: #f9e6bb; font-size: 10px; letter-spacing: .3px; text-transform: none; }
+.wizard-side-copy { font-size: 24px; text-transform: none; letter-spacing: -.3px; line-height: 1.3; margin: 30px 0; }
+.wizard-steps li { opacity: .85; }
+.launcher-briefing { display: none; }
+.wizard-heading .eyebrow { display: none; }
+.wizard-heading h1 { font-family: Tahoma, Verdana, sans-serif; letter-spacing: -.5px; }
+.wizard-heading p { color: #4c5a66; }
+.about-brand h1 { font: bold 26px Tahoma, Verdana, sans-serif; letter-spacing: -.5px; }
+.about-brand h1 span { color: #17688b; font-weight: normal; }
+.about-brand p, .about-brand small { color: #425a6b; font-size: 11px; }
+.about-card p, .about-resources, .about-legal { font-size: 11px; color: #435968; line-height: 1.6; }
+.about-resources a, .about-legal a { color: #12618b; }
+.start-menu { width: 440px; border-color: var(--wc-deep); }
+.start-menu > header { border-bottom: 2px solid #e0b96a; }
+.start-menu header strong { font-size: 15px; max-width: 340px; overflow-wrap: anywhere; }
+.start-menu header div span { font-size: 10px; }
+.user-avatar { background: #fbf1d5; color: #17688b; }
+.start-primary strong { font-size: 11px; color: #223e53; }
+.start-primary small { font-size: 10px; color: #4d6170; line-height: 1.4; }
+.start-secondary button { color: #244759; font-size: 11px; }
+.settings-panel h1 { color: #234f67; font-size: 23px; }
+.setting-block strong { color: #2f4858; font-size: 12px; }
+.setting-block span { color: #4f626e; font-size: 11px; line-height: 1.4; }
+.setting-block select { min-height: 32px; font-size: 11px; color: #234759; }
+.settings-nav button { font-size: 11px; }
+.winchester-profile-form { padding: 0 0 16px; border-bottom: 1px solid #d0dae0; }
+.winchester-profile-form label { display: grid; gap: 5px; font-size: 12px; color: #2f4858; }
+.winchester-profile-form label span { color: #4f626e; font-size: 11px; }
+.winchester-profile-form > div { display: flex; gap: 8px; margin-top: 12px; }
+.winchester-profile-form input { width: 100%; min-width: 0; min-height: 34px; padding: 6px 10px; border: 1px solid #859eae; color: #243e51; background: #fff; font: 12px Tahoma, sans-serif; border-radius: 2px; }
+.winchester-profile-form button { flex: 0 0 auto; }
+.winchester-profile-form p { min-height: 14px; margin: 8px 0 0; color: #2c6247; font-size: 11px; }
+.wallpaper-options { flex-wrap: wrap; }
+.wallpaper-swatch { width: 38px; min-height: 30px; }
+.net-hero { background: #e8f1f5; }
+.net-hero h1 { color: #234f67; }
+.net-hero p, .net-hero span { color: #385769; }
+:focus-visible { outline: 2px solid #a46515; outline-offset: 3px; }
+::selection { color: #fff; background: #176a93; }
+input, textarea { caret-color: #176a93; }
+.tray-clock { font-variant-numeric: tabular-nums; }
+.window-body, .settings-panel, .start-primary, .start-secondary { scrollbar-color: #8caabd #eef3f4; }
+@media (max-width: 760px) {
+  .winchester-desktop-brand { display: none; }
+  .desktop-icons { top: 14px; left: 8px; grid-template-rows: repeat(5, 78px); grid-auto-columns: 86px; gap: 4px; }
+  .desktop-icon { width: 86px; min-height: 76px; }
+  .start-menu { width: min(440px, calc(100vw - 8px)); }
+  .setting-block { gap: 12px; flex-wrap: wrap; padding: 12px 0; }
+  .settings-body { display: flex; flex-direction: column; min-height: 0; }
+  .settings-nav { display: flex; flex: 0 0 auto; gap: 4px; overflow-x: auto; padding: 8px; border-right: 0; border-bottom: 1px solid #a4bbc9; }
+  .settings-nav button { display: flex; flex: 0 0 auto; align-items: center; gap: 5px; min-height: 36px; width: auto; padding: 6px 10px; white-space: nowrap; }
+  .settings-nav button svg { width: 19px; height: 19px; }
+  .settings-nav button span { display: inline; }
+  .settings-panel { padding: 18px 14px; flex: 1; min-height: 0; }
+  .settings-panel h1 { font-size: 20px; }
+  .winchester-profile-form > div { flex-wrap: wrap; }
+  .about-brand { gap: 12px; }
+  .about-brand h1 { font-size: 22px; }
+}
+@media (max-height: 650px) and (min-width: 761px) {
+  .desktop-icons { grid-template-rows: repeat(5, 80px); }
+}

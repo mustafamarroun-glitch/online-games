@@ -7,19 +7,20 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
   const MAX_IMPORT_BYTES = 512 * 1024;
   const TEXT_EXTENSIONS = new Set(["txt", "md", "ini", "log", "json", "cfg"]);
   const LEGACY_WELCOME_CONTENT = "Welcome, Commander.\n\nThis Notepad document lives on the Project New Shoes virtual drive. Edit it, save it, close the browser, and open it again from My Files.\n\nUseful places:\n- Game Saves\n- Replays\n- Screenshots\n- Mods\n";
-  const WELCOME_CONTENT = LEGACY_WELCOME_CONTENT.replace("\n- Mods\n", "\n");
+  const V1_WELCOME_CONTENT = LEGACY_WELCOME_CONTENT.replace("\n- Mods\n", "\n");
+  const WELCOME_CONTENT = "Welcome to Winchester OS.\n\nA little desktop. A place of your own.\n\nOpen Game Launcher to add your Zero Hour files. Personalize your name, wallpaper, and colors in Settings. Your files, saves, and replays stay in this browser.\n\nFor a game-file backup, open My Files > Browser Storage and choose Download all (ZIP).\n\nPress Ctrl + Alt + Escape in-game to return to your desktop.\n";
 
   function seedFileSystem() {
     const modified = new Date().toISOString();
     return {
       version: 3,
       nodes: [
-        { id: "root", parent: null, type: "folder", name: "New Shoes Drive", modified },
+        { id: "root", parent: null, type: "folder", name: "Winchester Drive", modified },
         { id: "saves", parent: "root", type: "folder", name: "Game Saves", modified },
         { id: "replays", parent: "root", type: "folder", name: "Replays", modified },
         { id: "notes", parent: "root", type: "folder", name: "Notes", modified },
         { id: "screens", parent: "root", type: "folder", name: "Screenshots", modified },
-        { id: "note-1", parent: "notes", type: "file", kind: "text", name: "Welcome to Project New Shoes.txt", modified, size: WELCOME_CONTENT.length, content: WELCOME_CONTENT },
+        { id: "note-1", parent: "notes", type: "file", kind: "text", name: "Welcome to Winchester OS.txt", modified, size: WELCOME_CONTENT.length, content: WELCOME_CONTENT },
         { id: "note-2", parent: "notes", type: "file", kind: "text", name: "Battle plan.txt", modified, size: 151, content: "BATTLE PLAN\n===========\n1. Secure both supply docks.\n2. Scout the northern ridge.\n3. Keep one dozer in reserve.\n4. Do not panic.\n" },
       ],
     };
@@ -39,6 +40,14 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
             welcome.size = WELCOME_CONTENT.length;
           }
           try { localStorage.setItem(FILESYSTEM_KEY, JSON.stringify(stored)); } catch { /* optional migration */ }
+        }
+        const drive = stored.nodes.find(node => node.id === "root");
+        if (drive?.name === "New Shoes Drive") drive.name = "Winchester Drive";
+        const welcomeNote = stored.nodes.find(node => node.id === "note-1");
+        if (welcomeNote?.name === "Welcome to Project New Shoes.txt") welcomeNote.name = "Welcome to Winchester OS.txt";
+        if (welcomeNote && [LEGACY_WELCOME_CONTENT, V1_WELCOME_CONTENT].includes(welcomeNote.content)) {
+          welcomeNote.content = WELCOME_CONTENT;
+          welcomeNote.size = WELCOME_CONTENT.length;
         }
         return stored;
       }
@@ -664,7 +673,7 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
     const beforeCursor = editor.value.slice(0, editor.selectionStart);
     const lines = beforeCursor.split("\n");
     document.querySelector("#notepadStats").textContent = `Ln ${lines.length}, Col ${lines.at(-1).length + 1} · ${editor.value.length} characters`;
-    document.querySelector("#notepadSaveState").textContent = noteDirty ? "Modified" : openNoteId ? "Saved on New Shoes Drive" : "New document";
+    document.querySelector("#notepadSaveState").textContent = noteDirty ? "Modified" : openNoteId ? "Saved on Winchester Drive" : "New document";
     const fileName = document.querySelector("#notepadFileName").value || "Untitled.txt";
     document.querySelector("#notepadTitle").textContent = `${noteDirty ? "*" : ""}${fileName} - Notepad`;
   }
@@ -721,17 +730,17 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
 
   // Browser
   const browserPages = {
-    "newshoes://start": `<main class="net-home"><section class="net-hero"><div class="net-mark"><svg><use href="#i-system"/></svg></div><p>PROJECT NEW SHOES LOCAL INTRANET</p><h1>COMMAND NET</h1><span>Local services are online. Choose a channel.</span></section><section class="net-cards"><button data-browser-page="newshoes://manual"><b>01</b><strong>FIELD MANUAL</strong><span>How this desktop works</span></button><button data-browser-page="newshoes://status"><b>02</b><strong>SYSTEM STATUS</strong><span>Runtime and storage telemetry</span></button><button data-browser-page="newshoes://games"><b>03</b><strong>GAMES</strong><span>Command-approved downtime</span></button></section><footer>NEWSHOES://LOCAL-NET · BROWSER-LOCAL UPLINK</footer></main>`,
-    "newshoes://manual": `<main class="net-document"><header><span>PROJECT NEW SHOES FIELD MANUAL</span><h1>Browser desktop quick start</h1></header><section><h2>Game library</h2><p>Open the Game Launcher, select an owned disc image or installation folder, then choose temporary, remembered, or browser-installed storage.</p><h2>My Files</h2><p>Double-click folders to navigate. Text files open in Notepad. Imports smaller than 512 KB are retained and can be downloaded again.</p><h2>Desktop controls</h2><p>Drag title bars, double-click a title to maximize, and use the taskbar to minimize or restore applications.</p><h2>External web</h2><p>Type a URL in the address bar. Sites that disallow embedding can always be opened with the ↗ button.</p></section></main>`,
-    "newshoes://status": `<main class="net-status-page"><header><span>UPLINK TELEMETRY</span><h1>Local runtime status</h1></header><div class="status-grid"><article><i></i><strong>WASM RUNTIME</strong><b>READY</b><span>Real engine bridge loaded</span></article><article><i></i><strong>LOCAL DRIVE</strong><b>OPFS</b><span>Private browser filesystem available</span></article><article><i></i><strong>GRAPHICS</strong><b>WEBGL2</b><span>Live capability report in Settings</span></article><article><i></i><strong>NETWORK</strong><b>WEBRTC</b><span>Optional peer-to-peer transport</span></article></div></main>`,
-    "newshoes://games": `<main class="net-document games-link-page"><header><span>RECREATION CHANNEL</span><h1>Games</h1></header><section><p>Command has authorized a short break. The classics have been requisitioned and given a completely unnecessary military briefing.</p><button data-browser-open-app="games">Open Games folder</button></section></main>`,
+    "winchester://start": `<main class="net-home"><section class="net-hero"><div class="net-mark"><svg><use href="#i-system"/></svg></div><p>WINCHESTER OS HOME</p><h1>Welcome home.</h1><span>Your games, your files, and a few familiar places.</span></section><section class="net-cards"><button data-browser-page="winchester://manual"><b>01</b><strong>DESKTOP HELP</strong><span>How this desktop works</span></button><button data-browser-page="winchester://status"><b>02</b><strong>SYSTEM STATUS</strong><span>Runtime and storage telemetry</span></button><button data-browser-page="winchester://games"><b>03</b><strong>GAMES</strong><span>A few familiar classics</span></button></section><footer>WINCHESTER://LOCAL-NET · BROWSER-LOCAL UPLINK</footer></main>`,
+    "winchester://manual": `<main class="net-document"><header><span>WINCHESTER OS FIELD MANUAL</span><h1>Browser desktop quick start</h1></header><section><h2>Game library</h2><p>Open the Game Launcher, select an owned disc image or installation folder, then choose temporary, remembered, or browser-installed storage.</p><h2>My Files</h2><p>Double-click folders to navigate. Text files open in Notepad. Imports smaller than 512 KB are retained and can be downloaded again.</p><h2>Desktop controls</h2><p>Drag title bars, double-click a title to maximize, and use the taskbar to minimize or restore applications.</p><h2>External web</h2><p>Type a URL in the address bar. Sites that disallow embedding can always be opened with the ↗ button.</p></section></main>`,
+    "winchester://status": `<main class="net-status-page"><header><span>UPLINK TELEMETRY</span><h1>Local runtime status</h1></header><div class="status-grid"><article><i></i><strong>WASM RUNTIME</strong><b>READY</b><span>Real engine bridge loaded</span></article><article><i></i><strong>LOCAL DRIVE</strong><b>OPFS</b><span>Private browser filesystem available</span></article><article><i></i><strong>GRAPHICS</strong><b>WEBGL2</b><span>Live capability report in Settings</span></article><article><i></i><strong>NETWORK</strong><b>WEBRTC</b><span>Optional peer-to-peer transport</span></article></div></main>`,
+    "winchester://games": `<main class="net-document games-link-page"><header><span>RECREATION CHANNEL</span><h1>Games</h1></header><section><p>Command has authorized a short break. The classics have been requisitioned and given a completely unnecessary military briefing.</p><button data-browser-open-app="games">Open Games folder</button></section></main>`,
   };
-  let browserHistory = ["newshoes://start"];
+  let browserHistory = ["winchester://start"];
   let browserIndex = 0;
 
   function normalizeAddress(value) {
-    const address = value.trim();
-    if (address.startsWith("newshoes://")) return address.toLowerCase();
+    const address = value.trim().replace(new RegExp("^newshoes://", "i"), "winchester://");
+    if (address.startsWith("winchester://")) return address.toLowerCase();
     if (/^https?:\/\//i.test(address)) {
       try { return new URL(address).href; } catch { /* search for malformed URLs */ }
     }
@@ -748,6 +757,24 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
       frame.removeAttribute("src");
       page.hidden = false;
       page.innerHTML = browserPages[address];
+      if (address === "winchester://status") {
+        const installed = window.ZeroHAssetLibrary?.installedLibrary();
+        const canvas = document.createElement("canvas");
+        const graphics = canvas.getContext("webgl2");
+        const hasGraphics = Boolean(graphics);
+        graphics?.getExtension("WEBGL_lose_context")?.loseContext();
+        const readings = [
+          ["GAME LIBRARY", installed ? "INSTALLED" : "NOT INSTALLED", installed ? installed.archives.length + " validated game archives" : "Add your files in Game Launcher"],
+          ["BROWSER ISOLATION", window.crossOriginIsolated ? "ACTIVE" : "INACTIVE", "Required by the threaded engine"],
+          ["GRAPHICS", hasGraphics ? "WEBGL2 AVAILABLE" : "UNAVAILABLE", "Browser capability; gameplay is a separate check"],
+          ["MULTIPLAYER", "TESTING PENDING", typeof RTCPeerConnection === "function" ? "WebRTC available; a real online match still needs testing" : "WebRTC unavailable in this browser"]
+        ];
+        page.querySelectorAll(".status-grid article").forEach((article, index) => {
+          article.querySelector("strong").textContent = readings[index][0];
+          article.querySelector("b").textContent = readings[index][1];
+          article.querySelector("span").textContent = readings[index][2];
+        });
+      }
       page.querySelectorAll("[data-browser-page]").forEach((button) => button.addEventListener("click", () => navigateBrowser(button.dataset.browserPage)));
       page.querySelectorAll("[data-browser-open-app]").forEach((button) => button.addEventListener("click", () => desktop.openApp(button.dataset.browserOpenApp)));
       document.querySelector("#browserStatus").textContent = "Local intranet · ready";
@@ -810,15 +837,15 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
   document.querySelector("#noteDownloadButton").addEventListener("click", () => void downloadNode({ name: document.querySelector("#notepadFileName").value || "Untitled.txt", type: "file", kind: "text", content: editor.value, size: new Blob([editor.value]).size }));
   document.querySelector("#noteSelectAllButton").addEventListener("click", () => { editor.focus(); editor.select(); });
   document.querySelector("#noteWrapButton").addEventListener("click", () => { editor.classList.toggle("no-wrap"); desktop.showToast("Word wrap", editor.classList.contains("no-wrap") ? "Disabled" : "Enabled"); });
-  document.querySelector("#noteHelpButton").addEventListener("click", () => desktop.showToast("Notepad", "Documents save to the Notes folder on your New Shoes Drive."));
+  document.querySelector("#noteHelpButton").addEventListener("click", () => desktop.showToast("Notepad", "Documents save to the Notes folder on your Winchester Drive."));
 
   // Bind Browser.
   document.querySelector("#browserAddressForm").addEventListener("submit", (event) => { event.preventDefault(); navigateBrowser(document.querySelector("#browserAddress").value); });
-  document.querySelector("#browserHome").addEventListener("click", () => navigateBrowser("newshoes://start"));
+  document.querySelector("#browserHome").addEventListener("click", () => navigateBrowser("winchester://start"));
   document.querySelector("#browserReload").addEventListener("click", () => renderBrowser(browserHistory[browserIndex]));
   document.querySelector("#browserBack").addEventListener("click", () => { if (browserIndex > 0) { browserIndex -= 1; renderBrowser(browserHistory[browserIndex]); } });
   document.querySelector("#browserForward").addEventListener("click", () => { if (browserIndex < browserHistory.length - 1) { browserIndex += 1; renderBrowser(browserHistory[browserIndex]); } });
-  document.querySelector("#browserExternal").addEventListener("click", () => { const address = browserHistory[browserIndex]; if (/^https?:\/\//.test(address)) window.open(address, "_blank", "noopener"); else desktop.showToast("Local page", "This page only exists inside Project New Shoes Browser."); });
+  document.querySelector("#browserExternal").addEventListener("click", () => { const address = browserHistory[browserIndex]; if (/^https?:\/\//.test(address)) window.open(address, "_blank", "noopener"); else desktop.showToast("Local page", "This page only exists inside Winchester OS Browser."); });
   document.querySelector("#browserFrame").addEventListener("load", (event) => {
     if (!event.currentTarget.hidden) {
       document.querySelector("#browserStatus").textContent = "External page requested · use ↗ if the site blocks embedding";
@@ -844,7 +871,7 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
   renderExplorer();
   void refreshManagedReplays();
   newNote();
-  renderBrowser("newshoes://start");
+  renderBrowser("winchester://start");
 
   window.ZeroHApps = { navigateTo, showManagedStorage, openTextFile, getFileSystem: () => fileSystem };
 })();

@@ -1,0 +1,13 @@
+{
+  "name": "Winchester OS",
+  "shortName": "Winchester",
+  "version": "2.0.0-preview.1",
+  "edition": "Home Edition",
+  "tagline": "A little desktop. A place of your own.",
+  "defaultDisplayName": "Winchester",
+  "repository": "https://github.com/mustafamarroun-glitch/online-games",
+  "upstreamRepository": "https://github.com/Agusx1211/NewShoes",
+  "logo": "./assets/winchester/mark.svg",
+  "wallpaper": "./assets/winchester/home.webp",
+  "defaultAccent": "ocean"
+}

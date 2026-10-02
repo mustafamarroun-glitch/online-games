@@ -1,8 +1,12 @@
-# Online Games — testing beta
+# Winchester OS — Home Edition
 
-A modified [Project New Shoes](https://github.com/Agusx1211/NewShoes) browser desktop and compiled Zero Hour engine.
+**Version 2.0.0-preview.1 — testing preview.** A nostalgic personal gaming desktop based on [Project New Shoes](https://github.com/Agusx1211/NewShoes), with the locally compiled Zero Hour engine.
+
+Original Winchester branding and landscape wallpaper, a personal desktop name, three window colors, Simple/All shortcuts, and compact Settings. [V2 release notes](VERSION_2.md). The preserved V1 baseline is tagged v1.0.0.
 
 The site imports compatible game archives locally. Retail game data is not hosted or distributed here. Windows browser skirmish, sound, save/load, and desktop controls were tested. macOS gameplay, internet multiplayer, other editions, and long matches still need verification.
+
+V2 interface and migration checks passed locally and through the GitHub-style package. Engine artifacts are unchanged from V1; gameplay was not rerun for this identity milestone.
 
 ## Play
 

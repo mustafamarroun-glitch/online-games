@@ -1,10 +1,11 @@
 param(
-    [ValidateSet('Docker', 'Prebuilt')]
+    [ValidateSet('Docker', 'Prebuilt', 'Packaged')]
     [string]$Runtime = 'Docker'
 )
 
 $ErrorActionPreference = 'Stop'
 $previousUpstream = $env:GAME_UPSTREAM
+$previousPackaged = $env:GAME_PACKAGED
 Push-Location $PSScriptRoot
 try {
     if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
@@ -25,6 +26,12 @@ try {
         & $dockerExecutable compose up -d zeroh
         if ($LASTEXITCODE -ne 0) { throw 'The local game container could not start.' }
         $env:GAME_UPSTREAM = 'http://127.0.0.1:8080'
+    } elseif ($Runtime -eq 'Packaged') {
+        Remove-Item Env:GAME_UPSTREAM -ErrorAction SilentlyContinue
+        $env:GAME_PACKAGED = '1'
+        if (-not (Test-Path -LiteralPath '.local/github-pages/dist-threaded-release/cnc-port.wasm')) {
+            throw 'The retained compiled V1 website package is missing. Use the Docker runtime.'
+        }
     } else {
         Remove-Item Env:GAME_UPSTREAM -ErrorAction SilentlyContinue
         if (-not (Test-Path -LiteralPath '.local/prebuilt/dist-threaded-release/provenance.json')) {
@@ -39,6 +46,11 @@ try {
         Remove-Item Env:GAME_UPSTREAM -ErrorAction SilentlyContinue
     } else {
         $env:GAME_UPSTREAM = $previousUpstream
+    }
+    if ($null -eq $previousPackaged) {
+        Remove-Item Env:GAME_PACKAGED -ErrorAction SilentlyContinue
+    } else {
+        $env:GAME_PACKAGED = $previousPackaged
     }
     Pop-Location
 }

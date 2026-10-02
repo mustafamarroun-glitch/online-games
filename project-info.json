@@ -1,6 +1,7 @@
 {
-  "name": "Online Games",
-  "stage": "Testing beta",
+  "name": "Winchester OS",
+  "projectVersion": "2.0.0-preview.1",
+  "stage": "Version 2 testing preview",
   "reviewedAt": "2026-10-02",
   "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
   "sourceZipSha256": "91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e",
@@ -19,6 +20,15 @@
     "Other installations and mods",
     "Long-match stability"
   ],
+  "v2Verified": [
+    "Personalization persistence",
+    "Desktop shortcut switching",
+    "Window movement and restoration",
+    "Conservative V1 virtual-drive migration",
+    "390px touch settings",
+    "GitHub-style service-worker deployment preview"
+  ],
+  "runtimeRegression": "Engine artifacts unchanged from the verified V1 build. Gameplay was not rerun for this identity milestone.",
   "gameData": "Each browser imports compatible files locally. No retail game data is distributed by this website.",
   "videos": "Optional movie playback is not included in this beta package."
 }

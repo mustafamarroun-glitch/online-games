@@ -1,21 +1,21 @@
 {
-  "name": "Online Games",
-  "short_name": "Online Games",
-  "description": "The original Generals and Zero Hour engine running in your browser.",
+  "name": "Winchester OS",
+  "short_name": "Winchester OS",
+  "description": "A little desktop. A place of your own.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "background_color": "#111513",
-  "theme_color": "#111513",
+  "background_color": "#16668d",
+  "theme_color": "#16668d",
   "icons": [
     {
-      "src": "./harness/assets/brand/project-new-shoes-icon-192.png",
+      "src": "./harness/assets/winchester/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./harness/assets/brand/project-new-shoes-icon-512.png",
+      "src": "./harness/assets/winchester/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
