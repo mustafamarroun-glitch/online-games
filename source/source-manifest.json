@@ -29,7 +29,9 @@
     "overrides/harness/launcher-asset-manager.mjs",
     "overrides/harness/launcher-asset-worker.js",
     "overrides/harness/launcher-desktop-apps.js",
-    "overrides/harness/launcher-archive-download.mjs"
+    "overrides/harness/launcher-archive-download.mjs",
+    "overrides/harness/launcher-backup-zip.mjs",
+    "overrides/harness/launcher-backup.css"
   ],
   "packagingChanges": [
     "Root launcher, isolation bootstrap, truthful beta status, unsupported disc entry hidden, analytics disabled, notice links"

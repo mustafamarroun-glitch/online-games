@@ -45,11 +45,11 @@ for (let offset = 0; offset < files.length; offset += 8) {
     await put(name, bytes);
   }));
 }
-for (const name of ['launcher-desktop-apps.js', 'launcher-archive-download.mjs']) {
+for (const name of ['launcher-desktop-apps.js', 'launcher-archive-download.mjs', 'launcher-backup-zip.mjs']) {
   await put(`harness/${name}`, await readFile(resolve(root, 'overrides/harness', name)));
 }
-await put('harness/launcher.css', bytesByName.get('harness/launcher.css').toString() +
-  '\n.managed-storage-file-download { grid-template-columns: minmax(0, 1fr) 72px auto; align-items: center; }\n.managed-storage-file-download > span:nth-child(2) { text-align: right; }\n.managed-storage-file-download > button { min-height: 28px; }\n');
+await put('harness/launcher.css', bytesByName.get('harness/launcher.css').toString() + '\n' +
+  await readFile(resolve(root, 'overrides/harness/launcher-backup.css'), 'utf8'));
 if (hash(bytesByName.get('dist-threaded-release/cnc-port.wasm')) !== config.runtimeWasmSha256) {
   throw new Error('This is not the verified locally compiled engine.');
 }
@@ -68,7 +68,7 @@ launcher = launcher.replace('<!-- __PUBLIC_PROJECT_DISCOVERY__ -->', discovery)
   .replace(/<title>[^<]*<\/title>/, `<title>${escape(config.name)}: Zero Hour browser desktop</title>`)
   .replace('<head>\n', '<head>\n    <base href="./harness/">\n    <script src="../coi-direct.js"></script>\n')
   .replace('href="./manifest.webmanifest"', 'href="../manifest.webmanifest"')
-  .replace('Expand a set to inspect its archives', 'Expand the installed library, then Download each archive to back it up')
+  .replace('Expand a set to inspect its archives', 'Expand the installed library to download one ZIP or individual archives')
   .replace(/<p class="about-legal">[\s\S]*?<\/p>/,
     '<p class="about-legal">Modified browser software, 2026. Copyright © Electronic Arts Inc. and Project New Shoes contributors. GPLv3 with additional terms; no warranty. <a href="../legal.html">License and notices</a> · <a href="../source/index.html">Corresponding source</a> · <a href="../project-info.json">Beta status</a></p>')
   .replace('Choose your original Generals and Zero Hour disc images, or an existing Zero Hour installation. We only inspect the files needed to prepare the game.',
@@ -110,7 +110,7 @@ for (let start = 0, number = 1; start < baseZip.length; start += partSize, numbe
 const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1',
   'tools/create-combined-overrides.mjs', 'tools/serve-local-preview.mjs', 'tools/fetch-prebuilt-runtime.ps1',
   'tools/package-deployment.mjs', 'tools/verify-deployment.mjs', 'tools/create-backup-overrides.mjs', 'deployment/project.json',
-  ...['launcher-archive-specs.js','launcher-asset-manager.mjs','launcher-asset-worker.js','launcher-desktop-apps.js','launcher-archive-download.mjs'].map(name => `overrides/harness/${name}`)];
+  ...['launcher-archive-specs.js','launcher-asset-manager.mjs','launcher-asset-worker.js','launcher-desktop-apps.js','launcher-archive-download.mjs','launcher-backup-zip.mjs','launcher-backup.css'].map(name => `overrides/harness/${name}`)];
 for (const name of sourceFiles) await put(`source/project/${name}`, await readFile(resolve(root, name)));
 await put('source/source-manifest.json', JSON.stringify({ upstreamCommit:config.upstreamCommit,
   originalZipSha256:config.sourceZipSha256, parts, projectFiles:sourceFiles,

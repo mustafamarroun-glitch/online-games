@@ -1,0 +1,13 @@
+/* Constrain the grid row and every flex ancestor so the archive list scrolls. */
+#explorerWindow .explorer-content { grid-template-rows: minmax(0, 1fr); overflow: hidden; }
+#explorerWindow .file-area { min-height: 0; overflow: hidden; }
+#managedStoragePanel > header, #managedStoragePanel > footer { flex-shrink: 0; }
+#managedStorageList { overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.managed-storage-file-download { grid-template-columns: minmax(0, 1fr) 72px auto; align-items: center; }
+.managed-storage-file-download > span:nth-child(2) { text-align: right; }
+.managed-storage-file-download > button { min-height: 28px; }
+.managed-storage-backup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px; border-bottom: 1px solid #53616d; }
+.managed-storage-backup > span { flex: 1 1 200px; font-size: 11px; line-height: 1.5; }
+.managed-storage-backup [hidden] { display: none; }
+.backup-save { text-decoration: none; }
+.managed-storage-backup :focus-visible { outline: 2px solid #82b8f8; outline-offset: 2px; }
