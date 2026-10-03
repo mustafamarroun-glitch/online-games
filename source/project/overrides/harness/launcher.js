@@ -49,7 +49,7 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
   }
 
   const APP_META = {
-    sanAndreas: { title: "San Andreas", icon: "#i-games" },
+    yuri: { title: "Yuri’s Revenge", icon: "#i-games" },
     setup: { title: "Game Launcher", launcherLogo: true },
     explorer: { title: "My Files", icon: "#i-folder" },
     mods: { title: "Mod Manager", icon: "#i-mod" },
@@ -912,6 +912,7 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
   }
 
   function updateLibraryUI() {
+    document.querySelector('#programsWindow').dataset.libraryReady = String(Boolean(state.library));
     const mode = state.library?.mode || "once";
     const labelsByMode = {
       once: { ready: "Temporary session", state: "Available for this session", location: "Local source" },
@@ -933,12 +934,12 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
     document.querySelectorAll(".library-state-label").forEach((label) => {
       label.textContent = state.library ? labels.state : "Original files required";
     });
-    document.querySelectorAll(".library-size span").forEach((el) => { el.textContent = state.library ? labels.location : "Local source"; });
+    document.querySelectorAll(".library-row:has([data-launch-game]) .library-size span").forEach((el) => { el.textContent = state.library ? labels.location : "Local source"; });
     const installed = mode === "install";
-    const hasShortcuts = Boolean(state.library && (mode === "remember" || installed));
+    const hasShortcuts = Boolean(state.library);
     document.querySelectorAll("[data-game-shortcut]").forEach((shortcut) => { shortcut.hidden = !hasShortcuts; });
     document.querySelectorAll("[data-launch-game]").forEach((button) => {
-      const label = state.library ? "Launch game" : "Original files required";
+      const label = state.library ? "Launch game" : "Add game files";
       button.disabled = false;
       if (button.classList.contains("launch-button")) {
         button.replaceChildren(Object.assign(document.createElement("span"), {
@@ -1042,8 +1043,17 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
   function loadSettings() {
     let settings = {};
     try { settings = JSON.parse(storageGet("zeroh-settings")) || {}; } catch { /* use defaults */ }
-    desktop.dataset.wallpaper = settings.wallpaper || "winchester";
-    document.querySelectorAll("[data-set-wallpaper]").forEach((button) => button.classList.toggle("is-selected", button.dataset.setWallpaper === desktop.dataset.wallpaper));
+    const wallpaper = ["flow", "hills"].includes(settings.wallpaper) ? settings.wallpaper : "flow";
+    desktop.dataset.wallpaper = wallpaper;
+    if (settings.wallpaper !== wallpaper) {
+      settings.wallpaper = wallpaper;
+      storageSet("zeroh-settings", JSON.stringify(settings));
+    }
+    document.querySelectorAll("[data-set-wallpaper]").forEach((button) => {
+      const selected = button.dataset.setWallpaper === desktop.dataset.wallpaper;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
     document.querySelector("#scaleSelect").value = settings.scale || "1";
     document.documentElement.style.setProperty("--ui-scale", settings.scale || "1");
     document.querySelector("#soundToggle").checked = Boolean(settings.sound);
@@ -1104,9 +1114,7 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
     }
   });
   window.addEventListener("cncport:runtimeclosed", () => {
-    document.querySelectorAll("[data-game-shortcut]").forEach((shortcut) => {
-      shortcut.hidden = false;
-    });
+    updateLibraryUI();
   });
 
   document.querySelector("#pickImageButton").addEventListener("click", async () => {
@@ -1255,7 +1263,10 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
 
   document.querySelectorAll("[data-set-wallpaper]").forEach((button) => button.addEventListener("click", () => {
     desktop.dataset.wallpaper = button.dataset.setWallpaper;
-    document.querySelectorAll("[data-set-wallpaper]").forEach((item) => item.classList.toggle("is-selected", item === button));
+    document.querySelectorAll("[data-set-wallpaper]").forEach((item) => {
+      item.classList.toggle("is-selected", item === button);
+      item.setAttribute("aria-pressed", String(item === button));
+    });
     saveSettings();
     track("setting_changed", { category: "appearance", setting: "wallpaper", value: "enabled" });
   }));
@@ -1296,6 +1307,7 @@ import { probeBinkVideoSupport } from "./bink_runtime.mjs";
     if (selector === "#soundToggle" && document.querySelector(selector).checked) playInterfaceSound("enabled");
   }));
   document.querySelector("#resetConceptButton").addEventListener("click", async () => {
+    if (!window.confirm("Reset Winchester OS? This removes this site's imported game library, virtual desktop files, built-in game progress, and desktop settings. Original files on your computer are not changed.")) return;
     await window.ZeroHAssetLibrary.forget();
     storageRemove("zeroh-library");
     storageRemove("zeroh-settings");

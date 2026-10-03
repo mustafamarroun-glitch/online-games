@@ -45,6 +45,20 @@ const server = createServer(async (req, res) => {
     res.end();
     return;
   }
+  if (url.pathname.startsWith('/games/yuris-revenge/') && ['GET', 'HEAD'].includes(req.method)) {
+    const root = fileURLToPath(new URL('../experiments/yuris-revenge/', import.meta.url));
+    const name = decodeURIComponent(url.pathname.slice('/games/yuris-revenge/'.length)) || 'index.html';
+    const shared = ['RA2-VM-source.zip', 'LICENSE', 'THIRD_PARTY.md', 'THIRD_PARTY_LICENSES.txt', 'provenance.json'].includes(name);
+    const path = resolve(root, shared ? name : `runtime/${name}`);
+    if (!path.startsWith(resolve(root) + sep) || name.split(/[\\/]/).some(part => part.startsWith('.'))) { res.writeHead(404); res.end(); return; }
+    try {
+      const body = await readFile(path);
+      res.writeHead(200, { 'content-type': extname(name) === '.wasm' ? 'application/wasm' : contentTypes[extname(name)] || 'application/octet-stream', 'content-length': body.length,
+        'cross-origin-opener-policy': 'same-origin', 'cross-origin-embedder-policy': 'require-corp', 'cross-origin-resource-policy': 'same-origin', 'cache-control': 'no-store' });
+      res.end(req.method === 'HEAD' ? undefined : body);
+    } catch { res.writeHead(404); res.end(); }
+    return;
+  }
   if (url.pathname.startsWith('/games/san-andreas/') && ['GET', 'HEAD'].includes(req.method)) {
     const root = fileURLToPath(new URL('../experiments/san-andreas/', import.meta.url));
     const name = decodeURIComponent(url.pathname.slice('/games/san-andreas/'.length)) || 'index.html';
@@ -80,7 +94,7 @@ const server = createServer(async (req, res) => {
     }
   }
   const name = url.pathname.startsWith('/harness/') ? url.pathname.slice('/harness/'.length) : '';
-  const brandAsset = /^assets\/winchester\/(mark\.svg|home\.webp|icon-(192|512)\.png)$/.test(name);
+  const brandAsset = /^assets\/winchester\/(mark\.svg|home\.webp|(?:flow|hills)(?:-thumb)?\.webp|icon-(192|512)\.png)$/.test(name);
   const transferDependency = name === 'vendor/trystero-transfer-nostr.min.mjs';
   if ((overrides.has(name) || brandAsset || transferDependency) && ['GET', 'HEAD'].includes(req.method)) {
     try {

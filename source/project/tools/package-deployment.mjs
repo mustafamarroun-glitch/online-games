@@ -72,6 +72,16 @@ for (const file of sanAndreas.artifacts) {
   await put(`games/san-andreas/${file.path.replace(/^runtime\//, '')}`, bytes);
 }
 await put('games/san-andreas/provenance.json', JSON.stringify(sanAndreas, null, 2));
+const yuri = JSON.parse(await readFile(resolve(root, 'experiments/yuris-revenge/provenance.json'), 'utf8'));
+for (const file of yuri.artifacts) {
+  if (file.path.split('/').some(part => part.startsWith('.') || part === '..') || /\.(exe|dll|mix|sav|rep)$/i.test(file.path)) throw new Error('Unexpected Yuri engine artifact.');
+  const path = resolve(root, 'experiments/yuris-revenge', file.path);
+  if (!path.startsWith(resolve(root, 'experiments/yuris-revenge') + (process.platform === 'win32' ? '\\' : '/'))) throw new Error('Unsafe Yuri artifact path.');
+  const bytes = await readFile(path);
+  if (hash(bytes) !== file.sha256) throw new Error(`Changed Yuri artifact: ${file.path}`);
+  await put(`games/yuris-revenge/${file.path.replace(/^runtime\//, '')}`, bytes);
+}
+await put('games/yuris-revenge/provenance.json', JSON.stringify(yuri, null, 2));
 if (hash(bytesByName.get('dist-threaded-release/cnc-port.wasm')) !== config.runtimeWasmSha256) {
   throw new Error('This is not the verified locally compiled engine.');
 }
@@ -115,8 +125,11 @@ await put('harness/play.html', '<!doctype html><meta charset="utf-8"><title>Open
 await put('project-info.json', JSON.stringify(config, null, 2));
 await put('VERSION_2.md', await readFile(resolve(root,'VERSION_2.md')));
 await put('VERSION_3.md', await readFile(resolve(root,'VERSION_3.md')));
+await put('VERSION_4.md', await readFile(resolve(root,'VERSION_4.md')));
+await put('YURIS_MULTIPLAYER.md', await readFile(resolve(root,'YURIS_MULTIPLAYER.md')));
+await put('YURIS_REVENGE.md', await readFile(resolve(root,'YURIS_REVENGE.md')));
 await put('SECURITY_REVIEW.md', await readFile(resolve(root,'SECURITY_REVIEW.md')));
-await put('SAN_ANDREAS.md', '# San Andreas in Winchester OS\n\nOpen Game Library → San Andreas → Play, or use its desktop/Start shortcut. It runs in a Winchester OS window. Select your own installation folder containing data and models. Files are read locally; game data is not hosted.\n\nThis is an OpenSA 0.2.0 solo exploration and driving prototype. Original missions and multiplayer are unavailable. It uses a police character, not CJ, and does not execute the original game or its native plugins.\n\nBrowsers without showDirectoryPicker use a folder-upload control. The word upload in the browser dialog means allowing this local application to read the selection; files are not sent to a server. The fallback remembers files for the current desktop session; select again after refreshing Winchester OS. Native folder handles can be remembered where supported.\n\nOpenSA copyright 2026 Aleksandrov Sergey; AGPL-3.0-only. Baseline: https://github.com/Avatarchik/opensa at d30f4e8ad2d41a9c7965c1416d7e857b5ef5f7e6. [Complete license](games/san-andreas/LICENSE) · [Complete modified source](games/san-andreas/OpenSA-preview-source.zip) · [Provenance](games/san-andreas/provenance.json).\n');
+await put('SAN_ANDREAS.md', '# San Andreas standalone experiment\n\nRemoved from Winchester OS Game Library, desktop and Start on October 3, 2026. The retained OpenSA solo exploration prototype is separate and does not supply original missions or multiplayer. Players provide their own local files.\n\n[Complete AGPL license](games/san-andreas/LICENSE) · [Corresponding source](games/san-andreas/OpenSA-preview-source.zip) · [Provenance](games/san-andreas/provenance.json).\n');
 await put('.nojekyll', '');
 await put('LICENSE.md', await readFile(resolve(source, 'LICENSE.md')));
 let legal = await readFile(resolve(source, 'WebAssembly/pages/legal.html'), 'utf8');
@@ -124,6 +137,7 @@ legal = legal.replaceAll('__PAGES_SOURCE_URL__', './source/index.html')
   .replace(/<section>\s*<h2>Browser video runtime<\/h2>[\s\S]*?<\/section>/,
     '<section><h2>Testing beta</h2><p>This build adapts the importer for a combined English installation. macOS, multiplayer, other editions, and optional movies remain unverified. Retail game files are not included.</p></section>');
 legal = legal.replace('</body>', '<section><h2>San Andreas exploration engine</h2><p>OpenSA code copyright 2026 Aleksandrov Sergey, licensed under AGPL-3.0. This modified engine is an experimental solo browser runtime. Game files are supplied locally by each player.</p><p><a href="games/san-andreas/LICENSE">Complete AGPL license</a> · <a href="games/san-andreas/OpenSA-preview-source.zip">Complete corresponding source</a> · <a href="games/san-andreas/provenance.json">Engine provenance</a></p></section></body>');
+legal = legal.replace('</body>', '<section><h2>Red Alert 2 and Yuri’s Revenge browser VM</h2><p>RA2 VM is experimental software licensed under GPL-3.0-or-later. Players supply the original game executables and resources locally. EA has not endorsed and does not support this product.</p><p><a href="games/yuris-revenge/LICENSE">GPL license</a> · <a href="games/yuris-revenge/THIRD_PARTY_LICENSES.txt">Dependency licenses</a> · <a href="games/yuris-revenge/RA2-VM-source.zip">Complete modified source</a> · <a href="games/yuris-revenge/provenance.json">Engine provenance</a></p></section></body>');
 await put('legal.html', legal);
 // Ship the exact base source plus our complete build/import/package modifications.
 // Split the ZIP so the same artifact also fits Cloudflare's 25 MiB per-file cap.
@@ -135,13 +149,15 @@ for (let start = 0, number = 1; start < baseZip.length; start += partSize, numbe
   await put(`source/${name}`, bytes);
   parts.push({ name, bytes:bytes.length, sha256:hash(bytes) });
 }
-const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1', 'TRANSFER_FIX.md',
+const sourceFiles = ['Dockerfile', 'compose.yaml', '.dockerignore', 'Start-Local.ps1', 'TRANSFER_FIX.md', 'YURIS_REVENGE.md', 'tools/prepare-yuri-runtime.mjs', 'tools/package-yuri-runtime.py', 'tools/verify-yuri-integration.cjs',
   'VERSION_3.md', 'SECURITY_REVIEW.md', 'tools/create-security-overrides.mjs', 'deployment/security-policy.mjs',
   'tools/audit-dependencies.mjs', 'tools/prepare-build-dependencies.mjs', 'tools/verify-security.mjs', 'tools/verify-v3-browser.cjs', 'tools/verify-v3-engine.cjs', 'tools/verify-game-render-security.cjs', 'tools/backup-project.py',
   'tools/patch-opensa-build-dependencies.mjs', 'tools/verify-transfer-browser.cjs', 'tools/verify-transfer-recovery.cjs', 'tools/verify-transfer-website-relay.cjs', 'tools/verify-winchester-ui.cjs', 'tools/verify-hosted-deployment.mjs',
   'Start-SanAndreas.ps1', 'tools/serve-san-andreas-preview.mjs', 'tools/package-san-andreas-preview.py',
   'tools/create-combined-overrides.mjs', 'tools/serve-local-preview.mjs', 'tools/fetch-prebuilt-runtime.ps1',
   'tools/package-deployment.mjs', 'tools/verify-deployment.mjs', 'tools/prepare-github-repository.mjs', 'tools/create-backup-overrides.mjs', 'tools/create-winchester-overrides.mjs', 'tools/create-transfer-overrides.mjs', 'deployment/project.json', 'deployment/branding.json'];
+sourceFiles.push('VERSION_4.md', 'YURIS_MULTIPLAYER.md', 'STREAMING.md', 'Start-YuriMultiplayer.ps1', 'Stop-YuriMultiplayer.ps1', 'tools/package-yuri-relay.mjs', 'tools/serve-yuri-multiplayer.mjs', 'tools/verify-yuri-multiplayer.mjs', 'tools/verify-yuri-friends-game.mjs', 'tools/prepare-v4-release.mjs', 'tools/apply-launcher-ui.mjs', 'tools/verify-settings-theme.cjs', 'tools/verify-dark-desktop.cjs', 'tools/verify-welcome-shortcuts.cjs', 'tools/verify-yuri-backup.cjs');
+sourceFiles.push('tools/yuri-menu.css');
 async function listOverrideSources(directory, prefix = 'overrides/') {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) await listOverrideSources(resolve(directory, entry.name), prefix + entry.name + '/');

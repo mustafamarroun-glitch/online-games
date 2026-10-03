@@ -734,7 +734,18 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
 
   // Browser
   const browserPages = {
-    "winchester://start": `<main class="net-home"><section class="net-hero"><div class="net-mark"><svg><use href="#i-system"/></svg></div><p>WINCHESTER OS HOME</p><h1>Welcome home.</h1><span>Your games, your files, and a few familiar places.</span></section><section class="net-cards"><button data-browser-page="winchester://manual"><b>01</b><strong>DESKTOP HELP</strong><span>How this desktop works</span></button><button data-browser-page="winchester://status"><b>02</b><strong>SYSTEM STATUS</strong><span>Runtime and storage telemetry</span></button><button data-browser-page="winchester://games"><b>03</b><strong>GAMES</strong><span>A few familiar classics</span></button></section><footer>WINCHESTER://LOCAL-NET · BROWSER-LOCAL UPLINK</footer></main>`,
+    "winchester://start": `<main class="desktop-welcome">
+      <section class="welcome-content" aria-labelledby="welcomeHeading">
+        <img class="welcome-mark" src="./assets/winchester/mark.svg" width="52" height="52" alt="Winchester OS">
+        <h1 id="welcomeHeading">Welcome home.</h1>
+        <p class="welcome-intro">Your games and files, together on your desktop.</p>
+        <button class="welcome-library" type="button" data-browser-open-app="programs"><svg aria-hidden="true"><use href="#i-apps"/></svg>Open Game Library</button>
+        <p class="welcome-hint">Add your game files from the library. A desktop shortcut appears when they’re ready.</p>
+        <div class="welcome-links"><button type="button" data-browser-open-app="explorer"><svg aria-hidden="true"><use href="#i-folder"/></svg>My Files</button><button type="button" data-browser-open-app="settings"><svg aria-hidden="true"><use href="#i-gear"/></svg>Personalize desktop</button></div>
+        <button class="welcome-explore" type="button" data-browser-show-desktop>Explore the desktop</button>
+      </section>
+      <footer class="welcome-footer">Winchester OS · Home Edition<span>Your game files stay on this device.</span></footer>
+    </main>`,
     "winchester://manual": `<main class="net-document"><header><span>WINCHESTER OS FIELD MANUAL</span><h1>Browser desktop quick start</h1></header><section><h2>Game library</h2><p>Open the Game Launcher, select an owned disc image or installation folder, then choose temporary, remembered, or browser-installed storage.</p><h2>My Files</h2><p>Double-click folders to navigate. Text files open in Notepad. Imports smaller than 512 KB are retained and can be downloaded again.</p><h2>Desktop controls</h2><p>Drag title bars, double-click a title to maximize, and use the taskbar to minimize or restore applications.</p><h2>External web</h2><p>Type a URL in the address bar. Sites that disallow embedding can always be opened with the ↗ button.</p></section></main>`,
     "winchester://status": `<main class="net-status-page"><header><span>UPLINK TELEMETRY</span><h1>Local runtime status</h1></header><div class="status-grid"><article><i></i><strong>WASM RUNTIME</strong><b>READY</b><span>Real engine bridge loaded</span></article><article><i></i><strong>LOCAL DRIVE</strong><b>OPFS</b><span>Private browser filesystem available</span></article><article><i></i><strong>GRAPHICS</strong><b>WEBGL2</b><span>Live capability report in Settings</span></article><article><i></i><strong>NETWORK</strong><b>WEBRTC</b><span>Optional peer-to-peer transport</span></article></div></main>`,
     "winchester://games": `<main class="net-document games-link-page"><header><span>RECREATION CHANNEL</span><h1>Games</h1></header><section><p>Command has authorized a short break. The classics have been requisitioned and given a completely unnecessary military briefing.</p><button data-browser-open-app="games">Open Games folder</button></section></main>`,
@@ -783,6 +794,7 @@ import { downloadInstalledArchive, prepareInstalledBackup } from "./launcher-arc
       }
       page.querySelectorAll("[data-browser-page]").forEach((button) => button.addEventListener("click", () => navigateBrowser(button.dataset.browserPage)));
       page.querySelectorAll("[data-browser-open-app]").forEach((button) => button.addEventListener("click", () => desktop.openApp(button.dataset.browserOpenApp)));
+      page.querySelector('[data-browser-show-desktop]')?.addEventListener('click', () => document.querySelector('#browserWindow [data-window-action="close"]').click());
       document.querySelector("#browserStatus").textContent = "Local intranet · ready";
     } else {
       page.hidden = true;

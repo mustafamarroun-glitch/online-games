@@ -17,6 +17,7 @@ names.push('manifest.webmanifest', 'VERSION_2.md', 'harness/launcher-winchester.
 names.push('harness/launcher-device-transfer.mjs', 'harness/device-transfer-network.mjs', 'harness/device-transfer-network.json', 'harness/launcher-transfer-network.css', 'source/project/TRANSFER_FIX.md');
 names.push('harness/launcher-san-andreas.mjs', 'SAN_ANDREAS.md', ...manifest.pages.filter(file => file.name.startsWith('games/san-andreas/')).map(file => file.name));
 names.push('VERSION_3.md','SECURITY_REVIEW.md','harness/device-transfer-validation.mjs','harness/device-transfer-protocol.mjs','harness/archive-transfer-validation.mjs','harness/launcher-asset-manager.mjs','harness/mod-package-store.mjs','harness/launcher-games.mjs','harness/launcher-hardware-info.js','harness/vendor/trystero-transfer-nostr.min.mjs','source/project/overrides/build/package.json','source/project/overrides/build/package-lock.json');
+names.push('VERSION_4.md', 'YURIS_REVENGE.md', 'YURIS_MULTIPLAYER.md', 'harness/launcher-yuri.mjs', 'harness/launcher-yuri-library.mjs', ...manifest.pages.filter(file => file.name.startsWith('games/yuris-revenge/') || /harness\/assets\/winchester\/(flow|hills)/.test(file.name)).map(file => file.name));
 const checked = [];
 for (let offset = 0; offset < names.length; offset += 4) {
   const results = await Promise.allSettled(names.slice(offset, offset + 4).map(async name => {

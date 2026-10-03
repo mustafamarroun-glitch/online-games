@@ -1,0 +1,29 @@
+# Yuri friend-play hosting
+
+Run `./Start-YuriMultiplayer.ps1` from PowerShell in the project. It starts the pinned RA2 VM relay and the packaged Yuri browser runtime, then exposes that service through a temporary Cloudflare Quick Tunnel. It prints one configured game link for both players. The connection settings are enabled before file selection, including when a browser restores cached resources.
+
+1. Open the printed game link on both computers. Each player selects their own complete compatible installation, including `gamemd.exe`. If both games appear, choose Yuri's Revenge.
+2. Open **Network** in the original game. Confirm that the relay is connected and that both players appear.
+3. One player creates a game and selects a map. Set the other player's slot to **Open**; an AI opponent or Closed slot prevents the friend from joining. The other joins and confirms readiness; the host starts the match. Use matching game versions, mods and maps. Start with a moderate game speed while testing this alpha engine.
+
+The host computer must remain awake and online. `./Stop-YuriMultiplayer.ps1` ends hosting and disconnects all players. The public URL changes when the tunnel restarts. Startup reuses an existing running session rather than interrupting a match. These are temporary test sessions, with no uptime guarantee. Stable hosting requires a permanent relay endpoint.
+
+The server binds to loopback and publishes only the packaged engine's checksum-verified inventory, relay source and license notices. It has no upload endpoint and cannot serve the player's installation or arbitrary local files. A random room path limits the session to people with its game link; it is a shared secret, not an authenticated account. The existing relay's protocol checks, compatibility isolation and rate limits remain intact; connections are limited to eight. Public TCP/TLS connections go through Cloudflare.
+
+The connector is project-local, pinned to Cloudflare 2026.9.3 and verified against the official release SHA-256. No system service or router rule is installed. Process IDs and start times in `.local/yuri-multiplayer/session.json` allow the stop command to identify only the hosting processes it started. Logs and the current link live in that same ignored folder.
+
+For same-machine verification, use `./Start-YuriMultiplayer.ps1 -LocalOnly`. Its loopback link is not reachable by a friend on another computer. The default command creates the internet tunnel.
+
+Rebuild the relay with `node tools/package-yuri-relay.mjs` after preparing the pinned workspace dependencies. On this machine set `WINCHESTER_GIT` to the bundled Git if it is absent from PATH. The upstream relay protocol and game simulation are unchanged. Its complete source and the hosting wrapper are downloadable from `/relay/Yuri-relay-source.zip`, and the browser engine's corresponding source is available from `/play/RA2-VM-source.zip`.
+
+## Verification on 2026-10-03
+
+The standalone upstream relay passed 31 relevant protocol/client/server tests. Synthetic acceptance passed on loopback and the public WSS endpoint: independent browsers discovered each other, exchanged exact 4096-byte payloads in both directions, observed heartbeats, rejected incompatible executables, and checked that retail files and local state were inaccessible. The packaged game page passed shared-memory isolation and layout checks at 1440px and 390px.
+
+Native Yuri's Revenge acceptance also passed on loopback and through the public WSS relay. Two independent Chromium sessions loaded The Alamo, rendered their battlefields, synchronized the guest's real MCV deployment, advanced simulation for a 30-second observation, and synchronized a new host deployment afterward. Both ran on this Windows computer using local development asset loading; the separate public packaged page was tested without importing retail files. This establishes a short actual match over the public relay, rather than just packet exchange. It does not establish a complete match between separate computers or Windows/Mac compatibility.
+
+The native test uses `tools/verify-yuri-friends-game.mjs`, which delegates to the pinned upstream acceptance. A browser-only INI response fixture selects Americans for both players because the upstream probe counts the Allied MCV, opens human slots, and sets game speed 3. It does not modify the installation, engine instructions or simulation state. Full matches, faction coverage, audio and long-session stability remain pending.
+
+Evidence is retained in `.local/yuri-multiplayer-game-verification.json`, `.local/yuri-multiplayer-verification.json`, and `output/yuri-multiplayer-{local,public}-game/`. Earlier failures remain retained: the supplied saved preferences filled a two-player slot with AI; its Yuri faction did not satisfy the Allied MCV probe; one public attempt showed a native interruption, and another timed out during relay handshake. A later HTTP verification had a transient fetch failure, retained in `.local/yuri-multiplayer/verification-http-fetch-failure.json`; its repeat passed without retries. Successful reruns do not establish tunnel reliability. If a session disconnects, exit the match and restart the game; this engine does not support resuming an interrupted match.
+
+Developers can run the synthetic check with `node tools/verify-yuri-multiplayer.mjs` (or `--local` for an isolated local service). Set `WINCHESTER_BROWSER_EXECUTABLE` if the pinned Playwright Chromium is absent. For native acceptance, start a private development server rooted at the player's installation, set `RA2_BROWSER_ORIGIN`, `RA2_BROWSER_RELAY`, `RA2_BROWSER_EXECUTABLE`, `RA2_BROWSER_SCREENSHOT_DIR`, and `RA2_BROWSER_STABILITY_SECONDS=30`, then run `node tools/verify-yuri-friends-game.mjs`. Never tunnel the development asset server; only the inventory-restricted production server is public.

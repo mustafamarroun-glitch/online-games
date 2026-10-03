@@ -5,8 +5,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "background_color": "#16668d",
-  "theme_color": "#16668d",
+  "background_color": "#172630",
+  "theme_color": "#172630",
   "icons": [
     {
       "src": "./harness/assets/winchester/icon-192.png",

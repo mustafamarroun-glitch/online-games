@@ -33,6 +33,17 @@ for item in provenance['artifacts']:
     if hashlib.sha256(path.read_bytes()).hexdigest() != item['sha256']:
         raise ValueError('Experimental backup checksum mismatch.')
     include(path)
+# Preserve the independently packaged Yuri engine and corresponding source.
+yuri = root / 'experiments/yuris-revenge'
+if (yuri / 'provenance.json').exists():
+    include(yuri / 'provenance.json')
+    for item in json.loads((yuri / 'provenance.json').read_text())['artifacts']:
+        path = yuri / item['path']
+        if not path.resolve().is_relative_to(yuri.resolve()):
+            raise ValueError('Unsafe Yuri backup path.')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != item['sha256']:
+            raise ValueError('Yuri backup checksum mismatch.')
+        include(path)
 # Use the verified static publication inventory, not an unrestricted .local scan.
 package = json.loads((root / '.local/deployment/package-manifest.json').read_text())
 for item in package['pages']:

@@ -1,23 +1,53 @@
-# Winchester OS — Home Edition
+# Winchester OS — Online Games
 
-**Version 3.0.0-preview.1 — testing preview.** A nostalgic personal gaming desktop based on [Project New Shoes](https://github.com/Agusx1211/NewShoes), with the locally compiled Zero Hour engine.
+**Project version:** 4.0.0-preview.1, Winchester OS Home Edition. Version 4 releases the welcome screen, saved themes, responsive launcher, library-dependent shortcuts and Yuri’s Revenge preview. See [VERSION_4.md](VERSION_4.md) for the work recap, evidence and remaining limits. Previous releases remain preserved; upstream engine versions are separate.
 
-Original Winchester branding and landscape wallpaper, a personal desktop name, three window colors, Simple/All shortcuts, and compact Settings. [V3 release notes](VERSION_3.md) · [Security review](SECURITY_REVIEW.md). Previous releases remain at their tags.
+A New Shoes-based browser desktop for Generals Zero Hour. Local skirmish works using the inspected combined English installation. The testing beta is published on free GitHub Pages; Windows/Mac internet multiplayer still needs a real participant test.
 
-The site imports compatible game archives locally. Retail game data is not hosted or distributed here. Windows browser skirmish, sound, save/load, and desktop controls were tested. macOS gameplay, internet multiplayer, other editions, and long matches still need verification.
+**Device transfer repair:** direct transfers, reconnect and a forced receiving TURN relay passed encrypted browser delivery/checksum tests. Both devices load the shared ExpressTURN configuration automatically. The free relay is slow and not every restrictive network is supported; see [TRANSFER_FIX.md](TRANSFER_FIX.md). Its client credentials are public and visitors can consume the shared allowance.
 
-Version 3 includes an automatic internet relay, interrupted-transfer retry, bounded/validated transfer inputs, embedded-browser isolation, a script security policy, patched build lockfiles and safer backups. TURN client credentials are public on this static website; account login/admin credentials are excluded. Full retail-size transfers and physical two-device acceptance remain unverified.
+**Website:** https://mustafamarroun-glitch.github.io/online-games/  
+**Public repository:** https://github.com/mustafamarroun-glitch/online-games
 
-Version 2.0.0-preview.2 adds [San Andreas solo exploration](SAN_ANDREAS.md) to Game Library, desktop and Start, running in a Winchester OS window. Its separate OpenSA engine supports locally selected game files; a folder-upload fallback works without showDirectoryPicker. Multiplayer and original missions are unavailable. Native folder remembering is supported where available; fallback selections last for the current desktop session.
+Each browser imports compatible game files locally. Opening the website does not supply retail game data. No Windows installer or Docker is required on a visitor's device.
 
-## Play
+**Desktop startup:** Browser opens to a clean welcome page. Open Game Library when you want to add files; no file picker opens at startup. Zero Hour and Yuri’s Revenge gain desktop shortcuts after their files are ready. Saved libraries restore shortcuts on later visits; temporary libraries require their files again after the session ends.
 
-Open this repository's GitHub Pages website in current desktop Chrome. Select your compatible combined English installation's Data folder, install it in the browser, and launch Zero Hour. Choose Solo Play → Skirmish and enter a player name. Ctrl+Alt+Escape returns to the desktop. Each browser and website origin maintains its own local library.
+**Appearance:** Dark is the startup default. Use the desktop sun/moon icon to switch themes; your choice is saved and reflected in Settings. Midnight Flow and Morning Hills replace the old wallpaper choices. Original assets and generation prompts are documented in `overrides/harness/assets/winchester/WALLPAPERS.md`.
 
-## Build and license
+**San Andreas experiment:** Removed from Winchester OS Game Library, desktop, and Start on October 3, 2026. The standalone experiment and its documentation are retained separately in [SAN_ANDREAS.md](SAN_ANDREAS.md).
 
-Upstream revision: 3ccaa0e9af66889be183ca910851e881d47d437c. The threaded runtime was compiled locally with Docker and Emscripten 3.1.6. GitHub Pages browser isolation is supplied by the upstream service worker.
+The actual public HTTPS engine started an Alpine Assault skirmish against Easy Army. For a first visit, select the installation's Data folder, choose **Install in this browser**, then **Launch game**. Assets imported on localhost do not automatically appear on the public website or in a different browser profile.
 
-[Complete license](LICENSE.md) · [Notices](legal.html) · [Corresponding source and modifications](source/index.html) · [Beta status](project-info.json)
+To recover installed archives, open **My Files → Browser Storage**, expand **Installed Zero Hour library**, select **Download all (ZIP)**, wait for preparation, then select **Save ZIP**. Extract `Zero-Hour-backup.zip` before selecting its folder for a future import. All 17 original game archives are included, preserving their names and bytes. Individual Download buttons are still available, and the list scrolls to every stored file. The additional OriginalCursors.big file is generated by the app and is not required for reimporting the game.
 
-The source archive is split into two downloadable parts; reconstruction instructions and checksums are provided. Original archives are not modified. Optional movie playback is not included in this beta.
+## Open the local environment
+
+From this folder, run:
+
+```powershell
+.\Start-Local.ps1
+```
+
+Open [the local desktop](http://localhost:8081/harness/play.html). Docker now contains the successfully compiled engine. If starting a fresh workspace, follow [DOCKER_SETUP.md](DOCKER_SETUP.md) to build from source or use the verified official prebuilt fallback. The exact Docker CLI path is documented there if it is absent from PATH.
+
+For the prebuilt fallback, use `.\Start-Local.ps1 -Runtime Prebuilt`. Start only one preview server at a time.
+
+Select your compatible installation's `Data` folder, then choose **Install in this browser**. Keep using the exact localhost:8081 origin to reuse its stored assets and saves. Game files are read locally; they are excluded from Docker and public artifacts.
+
+Use **Solo Play → Skirmish**, enter a player name, and start a match. **Escape** opens the native game menu. **Ctrl+Alt+Escape** closes the runtime and returns to the desktop, preserving saves.
+
+## Continue development
+
+**Yuri’s Revenge preview:** Red Alert 2: Yuri’s Revenge is available through Game Library, desktop and Start in the local Winchester OS preview. It uses a separate RA2 VM alpha and its own local folder/archive picker, including the original `gamemd.exe`. A supplied complete Windows installation booted the original game and a Yuri skirmish; tank selection and movement passed. The earlier CnCNet folder lacking `gamemd.exe` cannot launch. See [YURIS_REVENGE.md](YURIS_REVENGE.md) for storage limits and remaining save/load, audio, sustained-match and multiplayer checks.
+
+**Yuri with friends:** `./Start-YuriMultiplayer.ps1` starts a temporary internet session and prints a shared game link. Both players import their own compatible installation and open **Network** in the game. Two browser sessions passed native match startup, synchronized base deployment and a 30-second check through the public relay. Separate-computer and full-match reliability remain unverified. Keep the hosting computer awake; `./Stop-YuriMultiplayer.ps1` ends the session. See [YURIS_MULTIPLAYER.md](YURIS_MULTIPLAYER.md).
+
+- [STREAMING.md](STREAMING.md): separate PC-hosted browser streaming prototype, local start/stop helpers and pending Mac/multiplayer acceptance checks.
+- [BUILD_STATUS.md](BUILD_STATUS.md): verified evidence and remaining checks.
+- [PROJECT_BRIEF.md](PROJECT_BRIEF.md): intended product and continuation steps.
+- [DOCKER_SETUP.md](DOCKER_SETUP.md): source build, start/stop, and prebuilt fallback.
+- [DEPLOYMENT.md](DEPLOYMENT.md): prepared free GitHub Pages deployment and public acceptance checks.
+- [overrides/README.md](overrides/README.md): combined asset profile and validation.
+
+Upstream: [Agusx1211/NewShoes](https://github.com/Agusx1211/NewShoes), retained at commit `3ccaa0e9af66889be183ca910851e881d47d437c`. Original license and source remain under the retained ZIP/vendor tree. Retail game data is supplied separately by each player with the current architecture.

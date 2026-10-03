@@ -7,17 +7,14 @@
 }
 #desktop[data-winchester-accent="classic"] { --wc-light: #4d9af1; --wc-mid: #1e65cf; --wc-deep: #124499; }
 #desktop[data-winchester-accent="silver"] { --wc-light: #9daebc; --wc-mid: #697f91; --wc-deep: #425867; }
-.desktop[data-wallpaper="winchester"] .wallpaper-art {
-  background: #29769d url('./assets/winchester/home.webp') center / cover no-repeat;
+.desktop .wallpaper-art {
+  background: #081326 url('./assets/winchester/flow.webp') center / cover no-repeat;
   filter: none;
 }
-.desktop[data-wallpaper="winchester"] .wallpaper-art::before {
-  background: linear-gradient(90deg, rgba(13, 32, 52, .28), transparent 32%);
+.desktop[data-wallpaper="hills"] .wallpaper-art {
+  background: #476e51 url('./assets/winchester/hills.webp') center / cover no-repeat;
 }
-.desktop[data-wallpaper="winchester"] .sun-glow,
-.desktop[data-wallpaper="winchester"] .ridge,
-.desktop[data-wallpaper="winchester"] .terrain-grid { display: none; }
-.wallpaper-swatch.winchester { background: #29769d url('./assets/winchester/home.webp') center / cover; }
+.desktop .wallpaper-art::before { background: linear-gradient(90deg, #00000038, transparent 28%); }
 .winchester-desktop-brand { position: absolute; z-index: 2; top: 40px; right: 44px; display: flex; align-items: center; gap: 15px; color: #fff; text-shadow: 0 2px 5px #16496b; max-width: calc(100% - 150px); }
 .winchester-desktop-brand img { flex: 0 0 56px; filter: drop-shadow(0 3px 6px #16496b66); }
 .winchester-desktop-brand h1 { margin: 0; font: bold 28px/1.2 Tahoma, Verdana, sans-serif; letter-spacing: -.8px; }
@@ -27,7 +24,7 @@
 .desktop[data-winchester-mode="simple"] .desktop-icons [data-winchester-advanced] { display: none; }
 .desktop-icons { top: 22px; left: 18px; grid-template-rows: repeat(7, 82px); grid-auto-columns: 96px; gap: 5px; }
 .desktop-icon { width: 96px; min-height: 80px; }
-.desktop-icon > span:last-child { font-size: 11px; line-height: 1.3; text-shadow: 1px 2px 3px #152c40; }
+.desktop-icon > span:last-child { font-size: 12px; line-height: 1.35; text-shadow: 0 1px 3px #000, 0 2px 6px #000; }
 .desktop-icon:hover, .desktop-icon:focus-visible { background: #145c8a99; }
 .window { border-color: var(--wc-deep); border-top-color: var(--wc-mid); }
 .titlebar, .start-menu > header, .taskbar { color: var(--wc-text); background: linear-gradient(180deg, var(--wc-light), var(--wc-mid) 18%, var(--wc-deep) 90%, var(--wc-mid)); }
@@ -37,8 +34,8 @@
 .taskbar { border-top-color: var(--wc-light); box-shadow: inset 0 1px #ffffff55; }
 .start-button { background: linear-gradient(#78ad78, #397f59 40%, #24653f 85%, #41855b); }
 .tray { background: linear-gradient(#ffffff1c, #ffffff05); }
-.wizard-side { background: #16688b url('./assets/winchester/home.webp') 35% center / auto 100% no-repeat; }
-.wizard-side::before { background: linear-gradient(180deg, #123f5577, #123f55f0 72%); }
+.wizard-side { background: #123449; }
+.wizard-side::before { display: none; }
 .wizard-side::after, .wizard-brand::after, .wizard-side-copy::after { display: none; }
 .wizard-brand { padding-bottom: 20px; justify-content: flex-start; }
 .wizard-brand .zeroh-mark { width: 44px; height: 44px; }
@@ -77,11 +74,45 @@
 .winchester-profile-form input { width: 100%; min-width: 0; min-height: 34px; padding: 6px 10px; border: 1px solid #859eae; color: #243e51; background: #fff; font: 12px Tahoma, sans-serif; border-radius: 2px; }
 .winchester-profile-form button { flex: 0 0 auto; }
 .winchester-profile-form p { min-height: 14px; margin: 8px 0 0; color: #2c6247; font-size: 11px; }
-.wallpaper-options { flex-wrap: wrap; }
-.wallpaper-swatch { width: 38px; min-height: 30px; }
+.wallpaper-setting { display: block; }
+.wallpaper-options { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.wallpaper-choice { display: grid; gap: 8px; width: 172px; padding: 6px 6px 9px; border: 1px solid #8aa4b3; border-radius: 5px; background: #eef3f5; color: #234759; text-align: left; font: 12px Tahoma, Verdana, sans-serif; }
+.wallpaper-choice img { display: block; width: 100%; height: 90px; border-radius: 2px; object-fit: cover; }
+.wallpaper-choice span { padding: 0 3px; }
+.wallpaper-choice.is-selected { outline: 2px solid #176a93; outline-offset: 2px; }
+.wallpaper-choice:hover { border-color: #176a93; }
 .net-hero { background: #e8f1f5; }
 .net-hero h1 { color: #234f67; }
 .net-hero p, .net-hero span { color: #385769; }
+/* Browser home is the OS welcome surface, with no startup file picker. */
+.desktop-welcome { min-height: 100%; display: grid; grid-template-rows: 1fr auto; color: #234759; background: #f8fafb; font: 14px/1.6 Tahoma, Verdana, sans-serif; }
+.welcome-content { align-self: center; justify-self: center; width: 100%; max-width: 580px; padding: 32px 36px; min-width: 0; }
+.welcome-mark { display: block; margin-bottom: 20px; }
+.welcome-content h1 { margin: 0 0 12px; color: #234f67; font: bold 32px/1.2 Tahoma, Verdana, sans-serif; letter-spacing: -.6px; }
+.welcome-intro { margin: 0 0 24px; max-width: 43ch; font-size: 15px; }
+.welcome-library { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; padding: 9px 16px; border: 1px solid #10577e; border-radius: 3px; background: #17688b; color: #fff; font: bold 13px Tahoma, Verdana, sans-serif; box-shadow: inset 0 1px #ffffff44; }
+.welcome-library:hover { background: #10577e; }
+.welcome-content svg { width: 20px; height: 20px; flex: 0 0 20px; }
+.welcome-hint { max-width: 49ch; margin: 12px 0 24px; color: #4f626e; font-size: 13px; }
+.welcome-links { display: flex; flex-wrap: wrap; gap: 12px 20px; padding-top: 16px; border-top: 1px solid #d0dae0; }
+.welcome-links button, .welcome-explore { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 4px 0; border: 0; background: transparent; color: #12618b; font: 13px Tahoma, Verdana, sans-serif; }
+.welcome-links button:hover, .welcome-explore:hover { text-decoration: underline; text-underline-offset: 3px; }
+.welcome-explore { margin-top: 12px; }
+.welcome-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 16px; padding: 10px 18px; border-top: 1px solid #d0dae0; background: #edf2f5; color: #385769; font-size: 11px; }
+.browser-page { scrollbar-color: #8caabd #eef3f4; }
+#desktop[data-winchester-theme="dark"] .desktop-welcome { background: var(--wc-surface); color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] .welcome-content h1 { color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] .welcome-hint { color: var(--wc-muted); }
+#desktop[data-winchester-theme="dark"] :is(.welcome-links button, .welcome-explore) { color: var(--wc-link); }
+#desktop[data-winchester-theme="dark"] .welcome-links { border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] .welcome-footer { background: var(--wc-raised); color: var(--wc-muted); border-color: var(--wc-border); }
+@media (max-width: 600px) {
+  .welcome-content { padding: 24px; }
+  .welcome-mark { width: 42px; height: 42px; margin-bottom: 14px; }
+  .welcome-content h1 { font-size: 28px; }
+  .welcome-intro { margin-bottom: 18px; }
+  .welcome-hint { margin-bottom: 20px; }
+}
 :focus-visible { outline: 2px solid #a46515; outline-offset: 3px; }
 ::selection { color: #fff; background: #176a93; }
 input, textarea { caret-color: #176a93; }
@@ -107,16 +138,23 @@ input, textarea { caret-color: #176a93; }
 @media (max-height: 650px) and (min-width: 761px) {
   .desktop-icons { grid-template-rows: repeat(5, 80px); }
 }
-/* San Andreas shares the desktop's native window and library controls. */
-.san-andreas-window { display: none; flex-direction: column; }
-.san-andreas-window.is-open:not(.is-minimized) { display: flex; }
-.san-andreas-body { flex: 1; min-height: 0; position: relative; background: #080808; }
-.san-andreas-body iframe { width: 100%; height: 100%; border: 0; display: block; }
-.san-andreas-body > p { position: absolute; inset: 0; margin: 0; padding: 32px; color: #f8f1df; background: #080808; z-index: 1; }
-.san-andreas-body > p[hidden] { display: none; }
-.san-andreas-footer { padding: 6px 10px; font: 11px Tahoma, sans-serif; background: #f4ecd9; color: #24384c; }
-.san-andreas-art { background: #16668d; color: #fff4d8; }
-.san-andreas-art svg { width: 36px; height: 36px; }
+.yuri-window { display: none; flex-direction: column; }
+.yuri-window.is-open:not(.is-minimized) { display: flex; }
+.yuri-guide, .yuri-footer { padding: 7px 10px; font: 11px/1.5 Tahoma, Verdana, sans-serif; background: #f4ecd9; color: #24384c; }
+.yuri-backup { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 10px; background: #f4ecd9; color: #24384c; font: 11px/1.5 Tahoma, Verdana, sans-serif; }
+.yuri-backup > span { flex: 1 1 220px; overflow-wrap: anywhere; }
+.yuri-backup .button { min-height: 32px; font-size: 12px; }
+.yuri-backup [hidden] { display: none; }
+.yuri-backup :focus-visible { outline: 2px solid #173854; outline-offset: 2px; }
+#desktop[data-winchester-theme="dark"] .yuri-backup { background: var(--wc-surface); color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] .yuri-backup :focus-visible { outline-color: #e7c777; }
+.yuri-body { flex: 1; min-height: 0; position: relative; background: #173854; }
+.yuri-body iframe { width: 100%; height: 100%; border: 0; display: block; }
+.yuri-body > p { position: absolute; inset: 0; margin: 0; padding: 32px; color: #fff4d8; background: #173854; z-index: 1; }
+.yuri-body > p[hidden], .yuri-body > button[hidden] { display: none; }
+.yuri-body > button { position: absolute; top: 100px; left: 32px; z-index: 2; }
+.yuri-art { background: #713c83; color: #fff4d8; }
+.yuri-art svg { width: 36px; height: 36px; }
 
 /* Respect reduced motion and keep the active controls inside scrollable windows. */
 .window-body, .settings-panel, .transfer-body { overscroll-behavior: contain; }
@@ -126,3 +164,177 @@ button, summary, .toolbar-button { touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Reset is a discoverable section, never an immediate navigation action. */
+.settings-nav #resetTab { margin-top: 16px; border-top: 1px solid #b2c6d7; border-radius: 0 0 3px 3px; color: #9c352b; }
+.settings-nav #resetTab.is-selected { color: #fff; background: #994c3e; }
+.reset-summary { margin: 24px 0 18px; padding: 18px; background: #f3f6f7; border: 1px solid #c9d6dd; }
+.reset-summary h2 { margin: 0 0 12px; color: #2f4858; font-size: 14px; }
+.reset-summary ul { margin: 0; padding-left: 20px; }
+.reset-summary li, .reset-summary p, .reset-hint, .settings-intro { color: #435767; font-size: 12px; line-height: 1.65; }
+.reset-summary li + li { margin-top: 8px; }
+.reset-summary p { margin: 16px 0 0; }
+.reset-hint { margin-bottom: 20px; }
+.button.reset-action { min-height: 40px; padding: 8px 14px; border-color: #8b362d; background: linear-gradient(#b24f42, #933b30); color: #fff; font-size: 12px; }
+.button.reset-action:hover { background: #84362d; }
+@media (max-width: 760px) { .settings-nav #resetTab { margin-top: 0; border-top: 0; } }
+
+/* One clear setup action, with the same Home Edition controls and chrome. */
+.wizard-main { background: #fffdf7; }
+.wizard-page { padding: 20px 32px 16px; }
+.wizard-heading > p:last-child { font-size: 12px; line-height: 1.6; color: #435767; }
+.setup-route { display: flex; flex-wrap: wrap; gap: 10px 20px; margin: 18px 0 0; padding: 0; list-style: none; color: #435767; font-size: 11px; }
+.setup-route li { display: flex; align-items: center; gap: 7px; }
+.setup-route li > span { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid #adbdc5; border-radius: 50%; background: #f0f4f5; color: #264b63; font-variant-numeric: tabular-nums; }
+.setup-route li:first-child { color: #174f70; font-weight: bold; }
+.setup-route li:first-child > span { border-color: #17668c; background: #17668c; color: #fff; }
+.source-grid { grid-template-columns: 1fr; margin-top: 14px; }
+.source-card[hidden] { display: none; }
+#pickFolderButton { min-height: 96px; grid-template-columns: 54px minmax(0, 1fr) 18px; gap: 16px; padding: 18px; border-color: #7c9bad; background: linear-gradient(#fff, #edf3f6); }
+#pickFolderButton .source-icon { width: 52px; height: 52px; border-radius: 4px; }
+#pickFolderButton .source-copy strong { font-size: 15px; color: #174f70; }
+#pickFolderButton .source-copy small { font-size: 12px; line-height: 1.5; color: #435767; }
+#pickFolderButton:hover { border-color: #17668c; background: #eaf4fa; }
+#pickFolderButton:disabled { cursor: wait; opacity: .6; }
+.folder-compatibility-picker { margin: 6px 0 0; align-self: flex-start; min-height: 32px; padding: 5px 0; text-align: left; font-size: 11px; line-height: 1.5; text-underline-offset: 3px; }
+.ownership-help { margin-top: 12px; }
+.ownership-help .eyebrow, .programs-hero .eyebrow { display: none; }
+.ownership-help h2 { font-size: 13px; }
+.ownership-help summary { min-height: 38px; padding: 11px 12px; font-size: 11px; }
+.purchase-links a { min-height: 30px; font-size: 10px; }
+.ownership-path { font-size: 12px; line-height: 1.65; color: #435767; }
+.ownership-path h3 { font-size: 12px; }
+.ownership-path code { font-size: 11px; overflow-wrap: anywhere; }
+.launcher-quick-settings { margin-top: 12px; padding: 10px 0; border: 0; border-radius: 0; background: transparent; color: #435767; font-size: 11px; line-height: 1.5; }
+.launcher-quick-settings button { min-height: 34px; font-size: 10px; }
+.privacy-note { margin-top: 12px; }
+.privacy-note p { font-size: 11px; line-height: 1.5; }
+
+/* Library labels communicate readiness; buttons communicate the next action. */
+.programs-hero h1 { font-family: Tahoma, Verdana, sans-serif; font-size: 24px; }
+.programs-hero > div > p:last-child { color: #435767; font-size: 12px; line-height: 1.6; }
+.library-list { gap: 10px; margin-top: 24px; }
+.library-row { grid-template-columns: 48px minmax(0, 1fr) 72px 110px 28px; gap: 12px; min-height: 92px; padding: 14px; }
+.library-details { min-width: 0; gap: 5px; }
+.library-details > strong { font-size: 13px; line-height: 1.4; }
+.library-details > span { color: #435767; font-size: 11px; line-height: 1.4; }
+.library-details small { color: #42614e; font-size: 10px; line-height: 1.5; }
+.library-size { color: #435767; font-size: 11px; }
+.library-size span { color: #435767; font-size: 10px; }
+.row-launch { min-height: 36px; padding: 6px 10px; font-size: 11px; line-height: 1.4; }
+.row-launch.accent { border-color: #874322; background: linear-gradient(#a9542e, #914822); }
+.row-launch:hover { filter: brightness(1.08); }
+.row-launch:disabled { opacity: .6; cursor: wait; filter: none; }
+#programsWindow[data-library-ready="false"] .library-state-label { color: #795b28; }
+#programsWindow[data-library-ready="false"] .library-details:has(.library-state-label) i { background: #b17a25; }
+#programsWindow[data-library-ready="false"] [data-launch-game] { border-color: #205f85; background: linear-gradient(#4387ad, #24668d); }
+#programsWindow[data-library-ready="false"] #forgetLibraryButton { display: none; }
+.storage-copy p, .storage-legend { color: #435767; font-size: 11px; line-height: 1.5; }
+.storage-copy > strong { font-size: 13px; }
+.more-button { min-height: 36px; }
+
+@media (max-width: 760px) {
+  .wizard-page { padding: 22px 18px; }
+  .wizard-heading h1 { font-size: 25px; line-height: 1.25; }
+  .setup-route { column-gap: 12px; font-size: 10px; }
+  .setup-route li { gap: 5px; }
+  .setup-route li > span { width: 20px; height: 20px; }
+  .ownership-help > header { gap: 10px; }
+  .purchase-links a { min-height: 36px; }
+  .ownership-help summary { min-height: 44px; }
+  .launcher-quick-settings { gap: 10px; }
+  .launcher-quick-settings button { min-height: 40px; }
+  .programs-hero { align-items: flex-start; gap: 16px; flex-direction: column; }
+  .programs-hero > .button { min-height: 40px; }
+  .library-row { grid-template-columns: 42px minmax(0, 1fr); gap: 10px 12px; padding: 14px 12px; }
+  .library-row .row-launch { grid-column: 2; justify-self: start; min-width: 120px; min-height: 42px; }
+  .library-list { margin-top: 18px; }
+  .library-details > strong { font-size: 14px; }
+  .storage-overview { gap: 14px; padding: 14px 12px; }
+}
+
+/* Dark Home Edition uses semantic surfaces, without filtering game content. */
+#desktop[data-winchester-theme="dark"] {
+  color-scheme: dark;
+  --wc-surface: #172630;
+  --wc-raised: #213440;
+  --wc-field: #101e28;
+  --wc-border: #48606e;
+  --wc-ink: #ecf2f6;
+  --wc-muted: #b9cad5;
+  --wc-link: #9bd4f5;
+  --winchester-field: var(--wc-field);
+  color: var(--wc-ink);
+}
+#desktop[data-winchester-theme="dark"] .wallpaper-art { filter: none; }
+#desktop[data-winchester-theme="dark"][data-wallpaper="hills"] .wallpaper-art { filter: brightness(.82); }
+#desktop[data-winchester-theme="dark"] .wallpaper-choice { background: var(--wc-raised); color: var(--wc-ink); border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] .wallpaper-choice.is-selected { outline-color: var(--wc-link); }
+#desktop[data-winchester-theme="dark"] .wallpaper-choice:hover { border-color: var(--wc-link); }
+.game-card-art:not(.has-retail-art), .game-card-art :is(.target-ring, .game-number, .stripe-set) { display: none; }
+.setting-block strong, .library-details > strong { line-height: 1.45; }
+.setting-block span, .library-details > span { font-size: 12px; line-height: 1.55; }
+.library-details > small { font-size: 11px; line-height: 1.5; }
+#desktop[data-winchester-theme="dark"] .window { background: var(--wc-surface); border-color: #365564; box-shadow: 0 10px 30px #0008; }
+#desktop[data-winchester-theme="dark"] :is(.titlebar, .taskbar, .start-menu > header, .start-menu > footer) { background: linear-gradient(color-mix(in srgb, var(--wc-mid), #13232e 55%), #13232e); }
+#desktop[data-winchester-theme="dark"] .titlebar { box-shadow: inset 0 1px #ffffff26, inset 0 -1px #0c1823; }
+#desktop[data-winchester-theme="dark"] :is(.window-body, .wizard-main, .programs-body, .settings-panel, .about-body, .file-area, .file-list, .notepad-editor, .browser-page, .transfer-body, .mod-manager-body, .custom-map-manager-body, .game-data-manager-body, .agent-bridge-body, .llm-ai-body, .llm-ai-manager-body, .games-body) { background: var(--wc-surface); color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] :is(.settings-nav, .explorer-sidebar, .start-secondary, .explorer-toolbar, .file-actions, .browser-toolbar, .browser-favorites, .notepad-menubar, .notepad-toolbar, .notepad-status, .file-list-head, .storage-overview, .detected-strip, .reset-summary, .hardware-heading, .hardware-group > header, .transfer-network-settings, .net-hero, .agent-bridge-enable, .agent-bridge-form fieldset) { background: var(--wc-raised); color: var(--wc-ink); border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] :is(.start-menu, .start-primary) { background: var(--wc-surface); color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] :is(.library-row, .about-card, .source-card, .storage-choice, .hardware-group, .api-card, .hardware-summary > div, .network-details, .transfer-choice-grid button, .net-cards button, .managed-storage-set, .mod-import-panel, .installed-mods-panel, .custom-map-import-panel, .installed-map-row, .game-data-context, .llm-ai-panel) { background: var(--wc-raised); color: var(--wc-ink); border-color: var(--wc-border); box-shadow: none; }
+#desktop[data-winchester-theme="dark"] #pickFolderButton { background: linear-gradient(#294655, #213440); border-color: #668698; }
+#desktop[data-winchester-theme="dark"] #pickFolderButton:hover { background: #304f60; border-color: #9bd4f5; }
+#desktop[data-winchester-theme="dark"] .source-icon.folder { background: #463d27; }
+#desktop[data-winchester-theme="dark"] :is(.window h1, .window h2, .window h3, .window strong, .setting-block strong, .start-primary strong, .reset-summary h2, .hardware-summary strong, .hardware-group dt, .library-details > strong, .storage-donut b) { color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] :is(.window p, .window small, .window label, .setting-block span, .library-details > span, .library-size, .library-size span, .storage-legend, .start-primary small, .start-secondary button, .about-facts dt, .about-facts dd, .about-build dt, .about-build dd, .hardware-group dd, .hardware-summary small, .hardware-summary span, .hardware-footer, .network-field span, .privacy-note p, .choice-text small, .choice-meta, .detected-strip span, .ready-footer, .file-row, .file-row > span, .browser-status, .notepad-status, .managed-storage-list, .game-settings-hint, .reset-hint, .net-document, .setup-route) { color: var(--wc-muted); }
+#desktop[data-winchester-theme="dark"] :is(.window a, .text-button, .folder-compatibility-picker, .source-arrow, .more-button, .net-document a) { color: var(--wc-link); }
+#desktop[data-winchester-theme="dark"] :is(.window input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), .window select, .window textarea, .address-bar, .search-box, .notepad-editor) { background: var(--wc-field); color: var(--wc-ink); border-color: var(--wc-border); caret-color: var(--wc-link); }
+#desktop[data-winchester-theme="dark"] :is(input, textarea)::placeholder { color: #a4b8c6; opacity: 1; }
+#desktop[data-winchester-theme="dark"] :is(.button, .toolbar-button, .launcher-quick-settings button, .hardware-actions button, .identity-lab-button, .game-tool-grid button, .browser-toolbar button, .notepad-toolbar button, .file-actions button, .transfer-network-buttons button, .managed-storage-file-download button) { background: linear-gradient(#355469, #294455); border-color: #688497; color: var(--wc-ink); box-shadow: inset 0 1px #ffffff1a; }
+#desktop[data-winchester-theme="dark"] :is(.button:hover, .toolbar-button:hover, .launcher-quick-settings button:hover) { background: #3a5c70; }
+#desktop[data-winchester-theme="dark"] .button.reset-action { color: #fff; border-color: #d78f82; background: linear-gradient(#a7483c, #89372e); }
+#desktop[data-winchester-theme="dark"] .button.reset-action:hover { background: #79352e; }
+#desktop[data-winchester-theme="dark"] :is(.settings-nav button, .explorer-sidebar button) { color: var(--wc-muted); background: transparent; }
+#desktop[data-winchester-theme="dark"] :is(.settings-nav button:hover, .explorer-sidebar button:hover, .start-primary button:hover, .start-secondary > button:hover, .file-row:hover) { background: #304b5d; }
+#desktop[data-winchester-theme="dark"] :is(.settings-nav button.is-selected, .explorer-sidebar button.is-selected, .file-row.is-selected) { color: #fff; background: #2b668d; }
+#desktop[data-winchester-theme="dark"] .settings-nav #resetTab { color: #ffb8aa; border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] .settings-nav #resetTab.is-selected { background: #784036; color: #fff; }
+#desktop[data-winchester-theme="dark"] :is(.setting-block, .winchester-profile-form, .file-row, .network-field, .browser-favorites, .ready-footer, .about-build > div) { border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] :is(.privacy-note, .space-warning, .library-progress-warning, .hardware-notice, .experimental-warning) { background: #373420; border-color: #8a7842; color: #f2dda3; }
+#desktop[data-winchester-theme="dark"] :is(.privacy-note, .space-warning, .library-progress-warning, .hardware-notice, .experimental-warning) :is(p, strong, small, span:not(:first-child)) { color: #f2dda3; }
+#desktop[data-winchester-theme="dark"] :is(.network-status, .agent-bridge-status[data-state="connected"], #winchesterProfileStatus, .library-details small, .detected-ok) { color: #b1e0bb; }
+#desktop[data-winchester-theme="dark"] .network-status { background: #1f382c; border-color: #597a63; }
+#desktop[data-winchester-theme="dark"] [data-library-ready="false"] .library-state-label { color: #edcb90; }
+#desktop[data-winchester-theme="dark"] :is(.toggle, .choice-radio, .setup-route li > span) { background: #344b59; border-color: #7e98a9; color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] :is(.setup-route li:first-child, .choice-text strong) { color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] .setup-route li:first-child > span { background: #2b668d; }
+#desktop[data-winchester-theme="dark"] .storage-donut::before { background: var(--wc-raised); }
+#desktop[data-winchester-theme="dark"] .storage-donut span { color: var(--wc-ink); }
+#desktop[data-winchester-theme="dark"] .task-button { background: linear-gradient(#315263, #223d4e); border-color: #5e7c8f; }
+#desktop[data-winchester-theme="dark"] .task-button.is-active { background: #0c2637; }
+#desktop[data-winchester-theme="dark"] .tray { background: #173849; border-color: #567889; }
+#desktop[data-winchester-theme="dark"] .window :disabled { opacity: .55; cursor: not-allowed; }
+#desktop[data-winchester-theme="dark"] :focus-visible { outline-color: #e7c777; }
+#desktop[data-winchester-theme="dark"] ::selection { background: #3479a6; color: #fff; }
+#desktop[data-winchester-theme="dark"] :is(.window-body, .settings-panel, .start-primary, .start-secondary, .wizard-main, .transfer-body) { scrollbar-color: #617e91 var(--wc-surface); }
+
+/* Secondary application surfaces share the same readable dark materials. */
+#desktop[data-winchester-theme="dark"] :is(.file-status, .browser-status, .explorer-sidebar h3, .installed-maps-panel, .llm-ai-heading, .llm-ai-tabs, .llm-ai-view > aside, .llm-ai-form fieldset, .llm-ai-fallback, .llm-ai-lease, .llm-ai-session-detail, .llm-ai-session-detail > header, .llm-ai-profile-card, .llm-ai-session-card, .about-build, .about-changelog, .about-changelog > header, .agent-bridge-status, .transfer-local-note, .managed-storage-empty, .manager-empty, .llm-ai-session-metrics > div) { background: var(--wc-raised); border-color: var(--wc-border); color: var(--wc-muted); }
+#desktop[data-winchester-theme="dark"] :is(.reset-summary li, .winchester-profile-form label span, .launcher-quick-settings > span, .explorer-sidebar button span, .address-bar button, .file-status span, .browser-toolbar > span, .browser-favorites > span, .browser-status span, .net-hero > span, .net-cards button span, .net-document li, .manager-empty span, .llm-ai-empty span, .llm-ai-status, .llm-ai-field span, .about-changelog li, .about-changelog p, .about-brand h1 span) { color: var(--wc-muted); }
+#desktop[data-winchester-theme="dark"] :is(.browser-favorites button, .agent-bridge-secret button) { color: var(--wc-link); }
+#desktop[data-winchester-theme="dark"] .llm-ai-tabs button { color: var(--wc-muted); }
+#desktop[data-winchester-theme="dark"] :is(.llm-ai-tabs button.is-selected, .llm-ai-profile-card.is-selected, .llm-ai-session-card.is-selected) { background: #2b668d; border-color: #7297ad; color: #fff; }
+#desktop[data-winchester-theme="dark"] .window code { color: #d3e8f5; background: var(--wc-field); }
+#desktop[data-winchester-theme="dark"] .agent-bridge-status[data-state="connected"] { background: #1f382c; }
+#desktop[data-winchester-theme="dark"] .agent-bridge-status[data-state="error"] { background: #4a2a28; border-color: #ad786f; }
+#desktop[data-winchester-theme="dark"] .agent-bridge-status[data-state="connecting"] { background: #373420; border-color: #8a7842; }
+#desktop[data-winchester-theme="dark"] :is(.installed-custom-maps-panel, .custom-map-list-panel, .llm-ai-runtime-policy, .llm-ai-diagnostics, .llm-ai-diagnostics li, .llm-ai-status, .llm-ai-transcript-card, .llm-ai-transcript-chip, .llm-ai-transcript-fields, .llm-ai-reasoning > div, .llm-ai-tool-call, .llm-ai-state-deltas li, .llm-ai-state-collection, .llm-ai-raw-details pre) { color: var(--wc-muted); background: var(--wc-raised); border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] :is(.llm-ai-status.is-success, #llmAiSavedBadge, .llm-ai-tool-call.is-success .llm-ai-tool-status) { color: #b1e0bb; background: #1f382c; border-color: #597a63; }
+#desktop[data-winchester-theme="dark"] :is(.llm-ai-status.is-error, .llm-ai-tool-call.is-error .llm-ai-tool-status, .hardware-error) { color: #ffb8aa; background: #4a2a28; border-color: #ad786f; }
+#desktop[data-winchester-theme="dark"] :is(.llm-ai-transcript-chip.is-warning, .llm-ai-tool-status) { color: #f2dda3; background: #373420; }
+#desktop[data-winchester-theme="dark"] :is(.mod-import-progress, .game-data-status, .installed-mod-card, .installed-mod-archives, .installed-mod-warning, .game-data-file-row, .game-data-context-card, .custom-map-card, .managed-storage-row, .managed-storage-file, .active-context-badge) { background: var(--wc-raised); color: var(--wc-muted); border-color: var(--wc-border); }
+#desktop[data-winchester-theme="dark"] :is(.installed-mod-controls button, .game-data-file-row button) { background: #294455; color: var(--wc-ink); border-color: #688497; }
+#desktop[data-winchester-theme="dark"] :is(.installed-mod-archives summary, .installed-mod-archives label span, .llm-ai-optional, .llm-ai-diagnostics span, .llm-ai-transcript-fields dt, .llm-ai-transcript-fields dd, .llm-ai-state-collection span) { color: var(--wc-muted); }
+#winchesterProfileForm .button { color: #234759; background: linear-gradient(#fff, #dce8f5); border-color: #7f9db9; }
+#desktop[data-winchester-theme="dark"] #winchesterProfileForm .button { color: var(--wc-ink); background: linear-gradient(#355469, #294455); border-color: #688497; }
+#desktop[data-winchester-theme="dark"] .browser-toolbar form > span { color: var(--wc-muted); }

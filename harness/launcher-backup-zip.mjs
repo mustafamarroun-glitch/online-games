@@ -11,16 +11,28 @@ function header(length) {
   const view = new DataView(bytes.buffer);
   return { bytes, u16: (at, value) => view.setUint16(at, value, true), u32: (at, value) => view.setUint32(at, value, true) };
 }
-export async function buildArchiveZip(entries, { onProgress = () => {}, signal } = {}) {
-  if (!entries.length || entries.length > 65535) throw new Error('No supported archive set is available.');
+export function buildArchiveZip(entries, options = {}) {
+  return buildZip(entries, options, name => /^[a-z0-9_!. -]+\.big$/i.test(name));
+}
+// Keep directory structure for complete installation backups. The Zero Hour
+// entry point above retains its stricter BIG-only contract.
+export function buildFileZip(entries, options = {}) {
+  return buildZip(entries, options, name => typeof name === 'string' &&
+    !/[\\:\x00-\x1f\x7f]/.test(name) &&
+    name.split('/').every(part => part && part !== '.' && part !== '..'));
+}
+async function buildZip(entries, { onProgress = () => {}, signal } = {}, validName) {
+  signal?.throwIfAborted();
+  if (!entries.length || entries.length > 65535) throw new Error('Select a folder with 1–65,535 files to create a backup.');
   const names = new Set();
   let expected = 22;
   for (const { name, file } of entries) {
-    if (!/^[a-z0-9_!. -]+\.big$/i.test(name) || names.has(name.toLowerCase())) throw new Error('Invalid or duplicate archive name.');
-    names.add(name.toLowerCase());
+    const key = typeof name === 'string' ? name.normalize('NFC').toLowerCase() : '';
+    if (!validName(name) || names.has(key) || encoder.encode(name).length > 65535) throw new Error('Invalid or duplicate backup file path.');
+    names.add(key);
     expected += file.size + 76 + encoder.encode(name).length * 2;
     if (!Number.isSafeInteger(file.size) || file.size < 0 || file.size >= limit || expected >= limit) {
-      throw new Error('This library is too large for a single backup ZIP. Download its archives individually.');
+      throw new Error('This folder exceeds the 4 GB limit for a backup ZIP. Keep a copy of the original folder instead.');
     }
   }
   const total = entries.reduce((sum, entry) => sum + entry.file.size, 0);

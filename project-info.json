@@ -1,8 +1,8 @@
 {
   "name": "Winchester OS",
-  "projectVersion": "3.0.0-preview.1",
-  "stage": "Version 3 testing preview",
-  "reviewedAt": "2026-10-02",
+  "projectVersion": "4.0.0-preview.1",
+  "stage": "Version 4 testing preview",
+  "reviewedAt": "2026-10-03",
   "upstreamCommit": "3ccaa0e9af66889be183ca910851e881d47d437c",
   "sourceZipSha256": "91dfb4dc739bd3b36bc893730d1f09eccda82143fbfd34dad6ae41b10739095e",
   "runtimeWasmSha256": "0b9ad4439b8e10c7f34bdcd6fc235f2d8f915362da6e0371f4a497ee8b4ef34d",
@@ -37,7 +37,7 @@
     "Current build dependency advisories",
     "Desktop and mobile regression checks"
   ],
-  "runtimeRegression": "Zero Hour engine artifacts unchanged from the verified V1 build. Version 3 prepared actual local archives and started the threaded frame loop under the script policy without script exceptions or policy violations. Full matches were not rerun.",
+  "runtimeRegression": "Zero Hour engine artifacts unchanged from the verified V1 build. Prior Version 3 prepared actual local archives and started the threaded frame loop under the script policy without script exceptions or policy violations. Full matches were not rerun.",
   "sanAndreas": {
     "engine": "OpenSA 0.2.0",
     "scope": "Solo exploration and driving; original missions and multiplayer unavailable",
@@ -49,8 +49,49 @@
       "390px window layout",
       "GitHub-style service-worker package"
     ],
-    "folderRetention": "Native handle remembering where supported; fallback files retained for the current desktop session without bulk IndexedDB copying"
+    "folderRetention": "Native handle remembering where supported; fallback files retained for the current desktop session without bulk IndexedDB copying",
+    "desktopIntegration": "Removed from Game Library, desktop and Start; standalone experiment retained"
+  },
+  "yurisRevenge": {
+    "engine": "RA2 VM 0.1.0",
+    "commit": "a10ac9899c258b01be1edd80492397e9de225ba5",
+    "stage": "Alpha gameplay preview",
+    "verified": [
+      "Library, desktop and Start shortcuts",
+      "Folder picker and missing-required-file feedback",
+      "Minimize, close and reopen lifecycle",
+      "1440px and 390px layouts",
+      "Host caches preserved",
+      "GitHub Pages subpath with service-worker isolation",
+      "TypeScript, 26 picker/i18n tests and production build",
+      "Complete Windows installation import and original Yuri menus",
+      "Yuri skirmish on The Alamo against Easy Enemy",
+      "Tank selection, movement and terrain reveal",
+      "Two-browser native LAN match through public WSS relay, synchronized guest and host MCV deployment, 30-second observation"
+    ],
+    "installationCheck": "Complete supplied Windows installation boots; earlier CnCNet folder lacking gamemd.exe remains unsupported",
+    "storageCheck": "Disposable-browser quota fallback cached only required files; full optional-resource persistence unverified",
+    "unverified": [
+      "Full construction and sustained matches",
+      "Audio, save/load and campaigns",
+      "macOS and separate-computer multiplayer",
+      "Faction coverage and temporary tunnel reliability"
+    ],
+    "upstreamCheckLimits": [
+      "Windows symlink fixture requires extra OS privileges",
+      "POSIX process-group CI test times out on Windows"
+    ],
+    "relay": "Temporary Cloudflare hosting helper; public WSS transport and short two-browser native match verified on 2026-10-03; separate-computer and long-match reliability pending"
   },
   "gameData": "Each browser imports compatible files locally. No retail game data is distributed by this website.",
-  "videos": "Optional movie playback is not included in this beta package."
+  "videos": "Optional movie playback is not included in this beta package.",
+  "v4Verified": [
+    "Welcome and on-demand Game Library",
+    "Library-dependent shortcuts and restoration",
+    "Saved dark/light themes and Settings consistency",
+    "Responsive launcher",
+    "Yuri local import and synthetic ZIP backup/restore",
+    "Yuri native skirmish and short two-browser public-relay match recorded separately"
+  ],
+  "hosting": "GitHub Pages static desktop. Yuri multiplayer and PC streaming helpers require a separately running host; no permanent multiplayer server is included."
 }
